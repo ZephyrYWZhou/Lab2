@@ -21,5 +21,11 @@ int TtyWrite(int tty_id, void *buf, int len);
  * Kernel Boot Entry Point
  */
 void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args){
-    
+
+}
+/*
+ * Kernel Memory Management
+ */
+int SetKernelBrk(void *addr){
+
 }
