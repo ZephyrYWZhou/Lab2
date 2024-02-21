@@ -61,7 +61,8 @@ all: $(ALL)
 
 yalnix: $(KERNEL_OBJS)  $(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
 
-clean:  rm -f $(KERNEL_OBJS) $(ALL)
+clean:  
+        rm -f $(KERNEL_OBJS) $(ALL)
 
 depend: $(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
 
