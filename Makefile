@@ -25,7 +25,7 @@
 #       For example, the Makefile will make test1 out of test1.c,
 #       if you have a file named test1.c in this directory.
 #
-ALL = yalnix test1 test2 test3
+ALL = yalnix
 
 #
 #       You must modify the KERNEL_OBJS and KERNEL_SRCS definitions
@@ -49,8 +49,7 @@ CFLAGS = -g -Wall -Wextra -Werror
 
 LANG = gcc
 
-%: %.o
-        $(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
+%: %.o  $(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
 LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -60,13 +59,10 @@ LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
 all: $(ALL)
 
-yalnix: $(KERNEL_OBJS)
-        $(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
+yalnix: $(KERNEL_OBJS)  $(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
 
-clean:
-        rm -f $(KERNEL_OBJS) $(ALL)
+clean:  rm -f $(KERNEL_OBJS) $(ALL)
 
-depend:
-        $(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
+depend: $(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
 
 #include .depend
