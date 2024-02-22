@@ -1,9 +1,16 @@
+/*-----------Headers-----------*/
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <comp421/yalnix.h>
 #include <comp421/hardware.h>
 
+/*----------Constant Definations---------*/
+
+
+
+
+/*----------Structure Definations---------*/
 // Define the array of function pointers
 void (*interrupt_vector_table[TRAP_VECTOR_SIZE])(ExceptionInfo *);
 
@@ -16,6 +23,7 @@ interrupt_vector_table[TRAP_MATH] = &trap_math_handler;
 interrupt_vector_table[TRAP_TTY_RECEIVE] = &trap_tty_receive_handler;
 interrupt_vector_table[TRAP_TTY_TRANSMIT] = &trap_tty_transmit_handler;
 
+/*----------Trap Handlers---------*/
 void trap_kernel_handler(ExceptionInfo *info) {
         
 }
@@ -44,6 +52,9 @@ void trap_tty_transmit_handler(ExceptionInfo *info) {
 
 }
 
+
+
+/*----------Kernel Calls---------*/
 /*
  * Yalnix Kernel Calls Declaration
  */
@@ -57,6 +68,8 @@ int Delay(int clock_ticks);
 int TtyRead(int tty_id, void *buf, int len);
 int TtyWrite(int tty_id, void *buf, int len);
 
+extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args);
+
 /*
  * Kernel Boot Entry Point
  */
@@ -69,8 +82,7 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
 
         /* Initialization */
 
-        // Initialize the interrupt vector table entries for each type of interrupt, exception, or trap, by making
-them point to the correct handler functions in your kernel
+        // Initialize the interrupt vector table entries for each type of interrupt, exception, or trap, by making them point to the correct handler functions in your kernel
 }
 
 

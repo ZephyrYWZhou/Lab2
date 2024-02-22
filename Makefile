@@ -33,8 +33,8 @@ ALL = yalnix
 #       make up your kernel, and KERNEL_SRCS should  be a list of
 #       the corresponding source files that make up your kernel.
 #
-KERNEL_OBJS = example1.o example2.o
-KERNEL_SRCS = example1.c example2.c
+KERNEL_OBJS = yalnix.o
+KERNEL_SRCS = yalnix.c
 
 #
 #       You should not have to modify anything else in this Makefile
@@ -45,11 +45,13 @@ KERNEL_SRCS = example1.c example2.c
 PUBLIC_DIR = /clear/courses/comp421/pub
 
 CPPFLAGS = -I$(PUBLIC_DIR)/include
-CFLAGS = -g -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Wno-unused-function -fno-inline
+
 
 LANG = gcc
 
-%: %.o  $(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
+%: %.o
+	$(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
 LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -59,11 +61,13 @@ LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
 all: $(ALL)
 
-yalnix: $(KERNEL_OBJS)  $(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
+yalnix: $(KERNEL_OBJS)
+	$(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
 
-clean:  
-        rm -f $(KERNEL_OBJS) $(ALL)
+clean:
+	rm -f $(KERNEL_OBJS) $(ALL)
 
-depend: $(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
+depend:
+	$(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
 
 #include .depend
