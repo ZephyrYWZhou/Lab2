@@ -1,4 +1,8 @@
-/*kernel call*/
+/* kernel call */
+
+#ifndef KERNELCALL
+#define KERNELCALL
+
 extern int kernelFork(void);
 
 extern int kernelExec(char *filename, char **argvec);
@@ -16,3 +20,5 @@ extern int kernelDelay(int clock_ticks);
 extern int kernelTtyread(int tty_id, void *buf, int len);
 
 extern int kernelTtywrite(int tty_id, void *buf, int len);
+
+#endif
