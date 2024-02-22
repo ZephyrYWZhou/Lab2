@@ -1,12 +1,17 @@
+/*-----------Headers-----------*/
 #include <stdio.h>
 #include <stdlib.h>
 
 #include <comp421/yalnix.h>
 #include <comp421/hardware.h>
 
-/*
- * Yalnix Kernel Calls Declaration
- */
+/*----------Constant Definations---------*/
+
+/*----------Structure Definations---------*/
+
+/*----------Trap Handlers---------*/
+
+/*----------Kernel Calls---------*/
 int Fork(void);
 int Exec(char *filename, char **argvec);
 void Exit(int status);
