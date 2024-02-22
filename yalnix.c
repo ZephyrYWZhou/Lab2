@@ -23,36 +23,6 @@ interrupt_vector_table[TRAP_MATH] = &trap_math_handler;
 interrupt_vector_table[TRAP_TTY_RECEIVE] = &trap_tty_receive_handler;
 interrupt_vector_table[TRAP_TTY_TRANSMIT] = &trap_tty_transmit_handler;
 
-/*----------Trap Handlers---------*/
-void trap_kernel_handler(ExceptionInfo *info) {
-        
-}
-
-void trap_clock_handler(ExceptionInfo *info) {
-
-}
-
-void trap_illegal_handler(ExceptionInfo *info) {
-
-}
-
-void trap_memory_handler(ExceptionInfo *info) {
-
-}
-
-void trap_math_handler(ExceptionInfo *info) {
-
-}
-
-void trap_tty_receive_handler(ExceptionInfo *info) {
-
-}
-
-void trap_tty_transmit_handler(ExceptionInfo *info) {
-
-}
-
-
 
 /*----------Kernel Calls---------*/
 /*
