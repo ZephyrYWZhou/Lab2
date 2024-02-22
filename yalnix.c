@@ -17,6 +17,8 @@ int Delay(int clock_ticks);
 int TtyRead(int tty_id, void *buf, int len);
 int TtyWrite(int tty_id, void *buf, int len);
 
+extern void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char **cmd_args);
+
 /*
  * Kernel Boot Entry Point
  */

@@ -45,11 +45,13 @@ KERNEL_SRCS = yalnix.c
 PUBLIC_DIR = /clear/courses/comp421/pub
 
 CPPFLAGS = -I$(PUBLIC_DIR)/include
-CFLAGS = -g -Wall -Wextra -Werror
+CFLAGS = -g -Wall -Wextra -Wno-unused-function -fno-inline
+
 
 LANG = gcc
 
-%: %.o  $(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
+%: %.o
+	$(LINK.o) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
 LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
@@ -59,10 +61,13 @@ LINK.o = $(PUBLIC_DIR)/bin/link-user-$(LANG) $(LDFLAGS) $(TARGET_ARCH)
 
 all: $(ALL)
 
-yalnix: $(KERNEL_OBJS)  $(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
+yalnix: $(KERNEL_OBJS)
+	$(PUBLIC_DIR)/bin/link-kernel-$(LANG) -o yalnix $(KERNEL_OBJS)
 
-clean:  rm -f $(KERNEL_OBJS) $(ALL)
+clean:
+	rm -f $(KERNEL_OBJS) $(ALL)
 
-depend: $(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
+depend:
+	$(CC) $(CPPFLAGS) -M $(KERNEL_SRCS) > .depend
 
 #include .depend
