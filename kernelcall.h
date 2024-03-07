@@ -3,22 +3,22 @@
 #ifndef KERNELCALL
 #define KERNELCALL
 
-extern int kernelFork(void);
+extern int Fork(void);
 
-extern int kernelExec(char *filename, char **argvec);
+extern int ExecFunc(char *filename, char **argvec);
 
-extern void kernelExit(int status);
+extern void Exit(int status);
 
-extern int kernelWait(int *status_ptr);
+extern int Wait(int *status_ptr);
 
-extern int kernelGetpid(void);
+extern int GetPid(void);
 
-extern int kernelBrk(void *addr);
+extern int Brk(void *addr);
 
-extern int kernelDelay(int clock_ticks);
+extern int Delay(int clock_ticks);
 
-extern int kernelTtyread(int tty_id, void *buf, int len);
+extern int TtyRead(int tty_id, void *buf, int len);
 
-extern int kernelTtywrite(int tty_id, void *buf, int len);
+extern int TtyWrite(int tty_id, void *buf, int len);
 
 #endif
