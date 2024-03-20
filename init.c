@@ -1,12 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <comp421/yalnix.h>
 #include <comp421/hardware.h>
+#include <comp421/yalnix.h>
 
 #define MAX_ARGC	32
 
-int
-StartTerminal(int i) {
+int StartTerminal(int i) {
     char *cmd_argv[MAX_ARGC];
     char numbuf[128];	/* big enough for %d */
     int pid;
@@ -25,35 +24,32 @@ StartTerminal(int i) {
 
 
     if (pid < 0) {
-	TtyPrintf(TTY_CONSOLE,
-	    "Cannot Fork control program for terminal %d.\n", i);
-	return (ERROR);
+		TtyPrintf(TTY_CONSOLE, "Cannot Fork control program for terminal %d.\n", i);
+		return (ERROR);
     }
 
     if (pid == 0) {
-	Exec(cmd_argv[0], cmd_argv);
-	TtyPrintf(TTY_CONSOLE,
-	    "Cannot Exec control program for terminal %d.\n", i);
-	Exit(1);
+		Exec(cmd_argv[0], cmd_argv);
+		TtyPrintf(TTY_CONSOLE, "Cannot Exec control program for terminal %d.\n", i);
+		Exit(1);
     }
 
     TtyPrintf(TTY_CONSOLE, "Started pid %d on terminal %d\n", pid, i);
     return (pid);
 }
 
-int
-main(int argc, char **argv) {
+int main(int argc, char **argv) {
     int pids[NUM_TERMINALS];
     int i;
     int status;
     int pid;
 
     for (i = 0; i < NUM_TERMINALS; i++) {
-	pids[i] = StartTerminal(i);
-	if ((i == TTY_CONSOLE) && (pids[TTY_CONSOLE] < 0)) {
-	    TtyPrintf(TTY_CONSOLE, "Cannot start Console monitor!\n");
-	    Exit(1);
-	}
+		pids[i] = StartTerminal(i);
+		if ((i == TTY_CONSOLE) && (pids[TTY_CONSOLE] < 0)) {
+			TtyPrintf(TTY_CONSOLE, "Cannot start Console monitor!\n");
+			Exit(1);
+		}
     }
 
     while (1) {
