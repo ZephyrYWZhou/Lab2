@@ -1,4 +1,4 @@
-#include "kernel.h"
+#include "kernelHeader.h"
 
 /*return the used pages in r0*/
 

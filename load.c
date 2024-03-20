@@ -1,4 +1,4 @@
-#include "kernel.h"
+#include "kernelHeader.h"
 /*
  *  Load a program into the current process's address space.  The
  *  program comes from the Unix file identified by "name", and its

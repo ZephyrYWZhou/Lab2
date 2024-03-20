@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "kernel.h"
 int main() {
     int i;
     fflush(stdout);

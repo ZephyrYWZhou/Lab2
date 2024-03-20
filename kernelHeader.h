@@ -12,11 +12,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-
-/**************************************************************
-data structures
-**************************************************************/
-
+/* -------------Structure declaration------------- */
 typedef struct pte pte;
 
 /*the status queue for waiting*/
@@ -38,7 +34,7 @@ typedef struct pcb {
     StatusQueue *statusQ;
     struct pcb *parent;
     struct pcb *next;
-} pcb;
+}pcb;
 
 typedef pcb ProcessControlBlock;
 
@@ -46,7 +42,7 @@ typedef pcb ProcessControlBlock;
 typedef struct pf {
     unsigned int phys_frame_num;
     struct pf *next;
-} phys_frame;
+}phys_frame;
 
 typedef struct terminal
 {
@@ -58,134 +54,74 @@ typedef struct terminal
     pcb *writingProc;
     pcb *writeQ_head;
     pcb *writeQ_end;
-} terminal;
+}terminal;
 
-/**************************************************************
-global variables
-**************************************************************/
-
-/*head of free phys frames*/
-extern phys_frame *free_frames_head;
-
-/* data structure for marking allocated page table */
-extern unsigned long next_PT_vaddr;
+/* -------------Global variables declaration------------- */
+extern phys_frame *free_frames_head; /* head of free phys frames */
+extern unsigned long next_PT_vaddr; /* data structure for marking allocated page table */
 extern int half_full;
-
-/*number of free phys pages*/
 extern int free_frame_cnt;
-
 typedef void (*interruptHandler)(ExceptionInfo *frame);
 extern interruptHandler interruptVector[TRAP_VECTOR_SIZE];
-
-/*page table for r1*/
 extern pte *pt_r1;
-
-/*page table for ro for idle*/
 extern pte idle_pt_r0[PAGE_TABLE_LEN];
-
 extern pcb *currentProc;
-
 extern pcb *readyQ_head, *readyQ_end;
-
 extern pcb *waitQ_head, *waitQ_end;
-
 extern pcb *delayQ_head;
-
 extern pcb *idleProc;
-
 extern terminal yalnix_term[NUM_TERMINALS];
-
 extern char kernel_stack_buff[PAGESIZE*KERNEL_STACK_PAGES];
-
 extern unsigned int next_pid;
-
 extern void *kernel_brk;
-
 extern int vm_enabled;
 
+/* -------------Kernel call functions declaration------------- */
+extern int kernel_Fork(void);
+extern int kernel_Exec(char *filename, char **argvec, ExceptionInfo *frame);
+extern void kernel_Exit(int status);
+extern int kernel_Wait(int *status_ptr);
+extern int kernel_Getpid(void);
+extern int kernel_Brk(void *addr);
+extern int kernel_Delay(int clock_ticks);
+extern int kernel_Ttyread(int tty_id, void *buf, int len);
+extern int kernel_Ttywrite(int tty_id, void *buf, int len);
 
-/*reap handler function*/
+/* -------------Trap handlers declaration------------- */
 void trap_kernel_handler(ExceptionInfo *frame);
-
 void trap_clock_handler(ExceptionInfo *frame);
-
 void trap_illegal_handler(ExceptionInfo *frame);
-
 void trap_memory_handler(ExceptionInfo *frame);
-
 void trap_math_handler(ExceptionInfo *frame);
-
 void trap_tty_receive_handler(ExceptionInfo *frame);
-
 void trap_tty_transmit_handler(ExceptionInfo *frame);
 
 
-/*utilities function*/
-int LoadProgram(char *name, char **args, ExceptionInfo *frame);
-
-int used_pgn_r0(void);
-
-unsigned long get_free_page(void);
-
-void remove_used_page(pte *p);
-
-void allocate_pt(pcb* p);
-
-unsigned long user_stack_bot(void);
-
-void add_ready_queue(ProcessControlBlock *p);
-
-void add_wait_queue(ProcessControlBlock *p);
-
-void add_read_queue(int tty_id, ProcessControlBlock* p);
-
-void add_write_queue(int tty_id, ProcessControlBlock* p);
-
-ProcessControlBlock *next_ready_queue(void);
-
-ProcessControlBlock *next_read_queue(int tty_id);
-
-ProcessControlBlock *next_write_queue(int tty_id);
-
-ProcessControlBlock *next_wait_queue(void);
-
-void update_delay_queue(void);
-
-RCS421RegVal vaddr2paddr(unsigned long vaddr);
-
-
-/*context switch functions*/
+/* -------------Context switch functions declaration------------- */
 SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *init_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2);
-
 SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2);
 
-/*kernel call*/
-extern int kernel_Fork(void);
-
-extern int kernel_Exec(char *filename, char **argvec, ExceptionInfo *frame);
-
-extern void kernel_Exit(int status);
-
-extern int kernel_Wait(int *status_ptr);
-
-extern int kernel_Getpid(void);
-
-extern int kernel_Brk(void *addr);
-
-extern int kernel_Delay(int clock_ticks);
-
-extern int kernel_Ttyread(int tty_id, void *buf, int len);
-
-extern int kernel_Ttywrite(int tty_id, void *buf, int len);
+/* -------------Helper function declaration------------- */
+int LoadProgram(char *name, char **args, ExceptionInfo *frame);
+int used_pgn_r0(void);
+unsigned long get_free_page(void);
+void remove_used_page(pte *p);
+void allocate_pt(pcb* p);
+unsigned long user_stack_bot(void);
+void add_ready_queue(ProcessControlBlock *p);
+void add_wait_queue(ProcessControlBlock *p);
+void add_read_queue(int tty_id, ProcessControlBlock* p);
+void add_write_queue(int tty_id, ProcessControlBlock* p);
+ProcessControlBlock *next_ready_queue(void);
+ProcessControlBlock *next_read_queue(int tty_id);
+ProcessControlBlock *next_write_queue(int tty_id);
+ProcessControlBlock *next_wait_queue(void);
+void update_delay_queue(void);
+RCS421RegVal vaddr2paddr(unsigned long vaddr);
 
 #endif

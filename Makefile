@@ -33,8 +33,8 @@ ALL = yalnix init idle console shell init1 init2 init3
 #	make up your kernel, and KERNEL_SRCS should  be a list of
 #	the corresponding source files that make up your kernel.
 #
-KERNEL_OBJS = yalnix.o load.o utilities.o kernelcall.o
-KERNEL_SRCS = yalnix.c load.c utilities.c kernelcall.c
+KERNEL_OBJS = yalnix.o load.o utilities.o kernelCall.o
+KERNEL_SRCS = yalnix.c load.c utilities.c kernelCall.c
 
 #
 #	You should not have to modify anything else in this Makefile
