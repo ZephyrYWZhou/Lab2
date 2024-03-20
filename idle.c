@@ -1,14 +1,11 @@
 #include <stdio.h>
-#include <stdlib.h>
-
-void runIdle() {
-    TracePrintf(0, "Running Idle...\n");
-    while (1) {
+#include "kernel.h"
+int main() {
+    int i;
+    fflush(stdout);
+    while (1){ 
+        fflush(stdout);
         Pause();
     }
-}
-
-int main(int argc, char *argv[]) {
-    runIdle();
     return 0;
 }

@@ -1,1 +1,8 @@
-This is the README file for Rice COMP421, Lab2
+Test result and analysis of the provided tests:
+----------------------------------------------------------
+| Test Name:    | Test result and analysis:              |
+| init1         | Pass! Exit() functions well            |
+| init2         | Pass! Delay() functions well           |
+| init3         | Pass! Getpid() functions well          |
+|
+|
