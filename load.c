@@ -178,7 +178,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
 
     for (i=0;i<PAGE_TABLE_LEN-KERNEL_STACK_PAGES;i++) {
         if (currentProc->pt_r0[i].valid) {
-            removeUsedPage(&(currentProc->pt_r0[i]));//XXX
+            remove_used_page(&(currentProc->pt_r0[i]));//XXX
             currentProc->pt_r0[i].valid = 0;
             WriteRegister(REG_TLB_FLUSH, (unsigned long)((currentProc->pt_r0)+i));
         }
@@ -213,7 +213,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
         currentProc->pt_r0[i].uprot = PROT_READ | PROT_EXEC;
         currentProc->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
         currentProc->pt_r0[i].valid = 1;
-        currentProc->pt_r0[i].pfn = getFreePage();//XXX
+        currentProc->pt_r0[i].pfn = get_free_page();
     }
 
 
@@ -230,7 +230,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
         currentProc->pt_r0[i].uprot = PROT_READ | PROT_WRITE;
         currentProc->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
         currentProc->pt_r0[i].valid = 1;
-        currentProc->pt_r0[i].pfn = getFreePage();//XXX
+        currentProc->pt_r0[i].pfn = get_free_page();
         }
 
     /* And finally the user stack pages */
@@ -249,7 +249,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
         currentProc->pt_r0[user_stack_limit-i].uprot = PROT_READ | PROT_WRITE;
         currentProc->pt_r0[user_stack_limit-i].kprot = PROT_READ | PROT_WRITE;
         currentProc->pt_r0[user_stack_limit-i].valid = 1;
-        currentProc->pt_r0[user_stack_limit-i].pfn = getFreePage();//XXX
+        currentProc->pt_r0[user_stack_limit-i].pfn = get_free_page();
         }
     /*
      *  All pages for the new address space are now in place.  Flush

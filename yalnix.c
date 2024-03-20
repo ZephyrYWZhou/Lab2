@@ -148,7 +148,7 @@ void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, c
     /* create init process */
     pcb *initProc = (pcb*)malloc(sizeof(pcb));
     initProc->pid = next_pid++;
-    allocPageTable(initProc);
+    allocate_pt(initProc);
 
     initProc->ctx = (SavedContext*)malloc(sizeof(SavedContext));
     initProc->n_child = 0;
@@ -162,7 +162,7 @@ void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, c
 
     for (addr = KERNEL_STACK_BASE; addr < KERNEL_STACK_LIMIT; addr += PAGESIZE) {
         i = addr>>PAGESHIFT;
-        initProc->pt_r0[i].pfn = getFreePage();
+        initProc->pt_r0[i].pfn = get_free_page();
         initProc->pt_r0[i].valid = 1;
         initProc->pt_r0[i].kprot = PROT_READ|PROT_WRITE;
         initProc->pt_r0[i].uprot = PROT_NONE;
@@ -191,7 +191,7 @@ int SetKernelBrk(void *addr) {
         for (a = UP_TO_PAGE(kernel_brk)-1; a<(unsigned long)addr; a+=PAGESIZE) {
             idx = (a-VMEM_1_BASE)>>PAGESHIFT;
             if(pt_r1[idx].valid==0){
-                pt_r1[idx].pfn = getFreePage();
+                pt_r1[idx].pfn = get_free_page();
                 pt_r1[idx].valid = 1;
                 pt_r1[idx].kprot = PROT_READ|PROT_WRITE;
                 pt_r1[idx].uprot = PROT_NONE;
@@ -308,7 +308,7 @@ void trap_memory_handler(ExceptionInfo *frame) {
             (currentProc->pt_r0)[i].valid=1;
             (currentProc->pt_r0)[i].kprot=PROT_READ|PROT_WRITE;
             (currentProc->pt_r0)[i].uprot=PROT_READ|PROT_WRITE;
-            (currentProc->pt_r0)[i].pfn=getFreePage();
+            (currentProc->pt_r0)[i].pfn=get_free_page();
         }
     }
     else {

@@ -8,7 +8,7 @@ int kernel_Fork(void) {
 
     childProc=(ProcessControlBlock*)malloc(sizeof(ProcessControlBlock));
     childProc->ctx=(SavedContext*)malloc(sizeof(SavedContext));
-    allocPageTable(childProc);
+    allocate_pt(childProc);
 
 /************************************************************/
 /* check mem */
@@ -143,14 +143,14 @@ int kernel_Brk(void *addr) {
                 currentProc->pt_r0[i].valid=1;
                 currentProc->pt_r0[i].uprot=PROT_READ|PROT_WRITE;
                 currentProc->pt_r0[i].kprot=PROT_READ|PROT_WRITE;
-                currentProc->pt_r0[i].pfn=getFreePage();
+                currentProc->pt_r0[i].pfn=get_free_page();
             }
         }
     }
     else {
         for (i = pn_brk; i > pn_addr; i--) {
             if (currentProc->pt_r0[i].valid == 1) {
-                removeUsedPage((currentProc->pt_r0)+i);
+                remove_used_page((currentProc->pt_r0)+i);
                 currentProc->pt_r0[i].valid=0;
             }
         }

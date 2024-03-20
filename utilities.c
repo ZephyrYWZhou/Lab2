@@ -11,7 +11,7 @@ int used_pgn_r0(void) {
     return used_pgn;
 }
 
-unsigned long getFreePage(void) {
+unsigned long get_free_page(void) {
     if (free_frames_head->next==NULL) return 0;
     phys_frame *tmp = free_frames_head->next;
     free_frames_head->next = tmp->next;
@@ -21,7 +21,7 @@ unsigned long getFreePage(void) {
     return ret;
 }
 
-void removeUsedPage(pte *p) {
+void remove_used_page(pte *p) {
     phys_frame *tmp=(phys_frame*)malloc(sizeof(phys_frame));
     tmp->phys_frame_num=p->pfn;
     tmp->next=free_frames_head->next;
@@ -101,7 +101,7 @@ int get_new_page(pte * pt, unsigned long addr) {
     return 0;
 }
 
-void allocPageTable(pcb* p) {
+void allocate_pt(pcb* p) {
     if (half_full==0) {
         /* set appropriate virtual start address for r0 page table */
         p->pt_r0 = (pte*)next_PT_vaddr;
@@ -113,7 +113,7 @@ void allocPageTable(pcb* p) {
         if(pt_r1[idx].valid) {
             kernel_Exit(ERROR);
         }
-        pt_r1[idx].pfn = getFreePage();
+        pt_r1[idx].pfn = get_free_page();
         pt_r1[idx].valid = 1;
         pt_r1[idx].kprot = PROT_READ|PROT_WRITE;
         pt_r1[idx].uprot = PROT_NONE;
@@ -325,7 +325,7 @@ SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
             if (i>=PAGE_TABLE_LEN-KERNEL_STACK_PAGES) pt2[i].uprot=PROT_NONE;
             else pt2[i].uprot=PROT_READ | PROT_WRITE;
             pt2[i].kprot= PROT_READ | PROT_WRITE;
-            pt2[i].pfn = getFreePage();
+            pt2[i].pfn = get_free_page();
             currentProc->pt_r0[addi_pte_vpn].valid = 1;//XXX
             currentProc->pt_r0[addi_pte_vpn].uprot = PROT_NONE;//XXX
             currentProc->pt_r0[addi_pte_vpn].kprot = PROT_READ | PROT_WRITE;//XXX
@@ -356,7 +356,7 @@ SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
     for(i=0;i<PAGE_TABLE_LEN;i++)
         if(pt1[i].valid){
             pt1[i].kprot |= PROT_WRITE;
-            removeUsedPage(&pt1[i]);//XXX
+            remove_used_page(&pt1[i]);
             pt1[i].valid=0;
         }
 

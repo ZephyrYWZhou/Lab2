@@ -125,11 +125,11 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame);
 
 int used_pgn_r0(void);
 
-unsigned long getFreePage(void);
+unsigned long get_free_page(void);
 
-void removeUsedPage(pte *p);
+void remove_used_page(pte *p);
 
-void allocPageTable(pcb* p);
+void allocate_pt(pcb* p);
 
 unsigned long user_stack_bot(void);
 
