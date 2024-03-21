@@ -44,7 +44,7 @@ void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, c
     interruptVector[TRAP_MATH] = &trap_math_handler;
     interruptVector[TRAP_TTY_RECEIVE] = &trap_tty_receive_handler;
     interruptVector[TRAP_TTY_TRANSMIT] = &trap_tty_transmit_handler;
-    for (i=7; i<TRAP_VECTOR_SIZE; i++) {
+    for (i = 7; i < TRAP_VECTOR_SIZE; i++) {
         interruptVector[i] = NULL;
     }
     WriteRegister(REG_VECTOR_BASE, (RCS421RegVal)(interruptVector));
@@ -301,17 +301,18 @@ void trap_memory_handler(ExceptionInfo *frame) {
     unsigned long down_addr_vpn=DOWN_TO_PAGE(addr)>>PAGESHIFT;
 
     if (addr_vpn <= usbot_vpn && addr_vpn > brk_vpn && (usbot_vpn-down_addr_vpn) < free_frame_cnt) {
-        for(i = addr>>PAGESHIFT;i <= userstackbottom>>PAGESHIFT;i++){
-            if((currentProc->pt_r0)[i].valid) {
+        for (i = addr>>PAGESHIFT;i <= userstackbottom>>PAGESHIFT;i++) {
+            if ((currentProc->pt_r0)[i].valid) {
                 Halt();
             }
-            (currentProc->pt_r0)[i].valid=1;
-            (currentProc->pt_r0)[i].kprot=PROT_READ|PROT_WRITE;
-            (currentProc->pt_r0)[i].uprot=PROT_READ|PROT_WRITE;
-            (currentProc->pt_r0)[i].pfn=get_free_page();
+            (currentProc->pt_r0)[i].valid = 1;
+            (currentProc->pt_r0)[i].kprot = PROT_READ|PROT_WRITE;
+            (currentProc->pt_r0)[i].uprot = PROT_READ|PROT_WRITE;
+            (currentProc->pt_r0)[i].pfn = get_free_page();
         }
     }
     else {
+        printf("Illegal memory access \n");
         kernel_Exit(ERROR);
     }
 }

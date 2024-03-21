@@ -1,5 +1,2 @@
 ** Kernel   level 3 tracing enabled **
 ** User     level 3 tracing enabled **
-User     init!
-User     init: main 0x1012c
-User     pid 1

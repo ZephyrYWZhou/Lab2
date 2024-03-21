@@ -4,5 +4,6 @@ Test result and analysis of the provided tests:
 | init1         | Pass! Exit() functions well            |
 | init2         | Pass! Delay() functions well           |
 | init3         | Pass! Getpid() functions well          |
-|
-|
+| trapillegal   | Pass! TRAP_ILLEGAL trap invoked        |
+| trapmath      | Pass! TRAP_MATH trap invoked           |
+| trapmemory    | Pass! TRAP_MEMORY trap invoked         |
