@@ -26,7 +26,7 @@ int vm_enabled = 0;
 
 /**********************************************************/
 
-void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, char** cmd_args) {
+void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char** cmd_args) {
     unsigned int i;
     unsigned long addr;
 
@@ -141,7 +141,7 @@ void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, c
 
     /*set currentProc as idle*/
     currentProc = idleProc;
-    LoadProgram("idle",cmd_args,frame);
+    LoadProgram("idle", cmd_args, info);
 
 /**********************************************************/
 
@@ -170,10 +170,14 @@ void KernelStart(ExceptionInfo *frame, unsigned int pmem_size, void *orig_brk, c
     ContextSwitch(init_sf,currentProc->ctx,currentProc,initProc);//XXX
 
     if (currentProc->pid == 0)
-        LoadProgram("idle",cmd_args, frame);
-    else if(currentProc->pid==1) {
-        if (cmd_args==NULL || cmd_args[0]==NULL) LoadProgram("init",cmd_args,frame);
-        else LoadProgram(cmd_args[0],cmd_args, frame);
+        LoadProgram("idle", cmd_args, info);
+    else if (currentProc->pid == 1) {
+        if (cmd_args == NULL || cmd_args[0]==NULL) {
+            LoadProgram("init", cmd_args, info);
+        }
+        else {
+            LoadProgram(cmd_args[0], cmd_args, info);
+        }
     }
 }
 
@@ -201,47 +205,47 @@ int SetKernelBrk(void *addr) {
     return 0;
 }
 
-void trap_kernel_handler(ExceptionInfo *frame) {
-    switch(frame->code){
+void trap_kernel_handler(ExceptionInfo *info) {
+    switch(info->code){
         case YALNIX_FORK:
-            frame->regs[0] = kernel_Fork();
+            info->regs[0] = kernel_Fork();
             break;
         case YALNIX_EXEC:
-            kernel_Exec((char*)(frame->regs[1]),(char**)(frame->regs[2]),frame);
+            kernel_Exec((char*)(info->regs[1]), (char**)(info->regs[2]), info);
             break;
         case YALNIX_EXIT:
-            kernel_Exit((int)(frame->regs[1]));
+            kernel_Exit((int)(info->regs[1]));
             break;
         case YALNIX_WAIT:
-            frame->regs[0] = kernel_Wait((int*)(frame->regs[1]));
+            info->regs[0] = kernel_Wait((int*)(info->regs[1]));
             break;
         case YALNIX_GETPID:
-            frame->regs[0] = kernel_Getpid();
+            info->regs[0] = kernel_Getpid();
             break;
         case YALNIX_BRK:
-            frame->regs[0] = kernel_Brk((void*)(frame->regs[1]));
+            info->regs[0] = kernel_Brk((void*)(info->regs[1]));
             break;
         case YALNIX_DELAY:
-            frame->regs[0] = kernel_Delay((int)(frame->regs[1]));
+            info->regs[0] = kernel_Delay((int)(info->regs[1]));
             break;
         case YALNIX_TTY_READ:
-            frame->regs[0] = kernel_Ttyread((int)(frame->regs[1]),(void*)(frame->regs[2]),(int)(frame->regs[3]));
+            info->regs[0] = kernel_Ttyread((int)(info->regs[1]),(void*)(info->regs[2]),(int)(info->regs[3]));
             break;
         case YALNIX_TTY_WRITE:
-            frame->regs[0] = kernel_Ttywrite((int)(frame->regs[1]),(void*)(frame->regs[2]),(int)(frame->regs[3]));
+            info->regs[0] = kernel_Ttywrite((int)(info->regs[1]),(void*)(info->regs[2]),(int)(info->regs[3]));
             break;
         default:
             break;
     }
 }
 
-void trap_clock_handler(ExceptionInfo *frame) {
+void trap_clock_handler(ExceptionInfo *info) {
     update_delay_queue();
     ContextSwitch(switch_sf,currentProc->ctx,currentProc,next_ready_queue());
 }
 
-void trap_illegal_handler(ExceptionInfo *frame) {
-    switch(frame->code) {
+void trap_illegal_handler(ExceptionInfo *info) {
+    switch(info->code) {
         case TRAP_ILLEGAL_ILLOPC:
             printf("Illegal opcode\n");
             break;
@@ -290,8 +294,8 @@ void trap_illegal_handler(ExceptionInfo *frame) {
     kernel_Exit(ERROR);
 }
 
-void trap_memory_handler(ExceptionInfo *frame) {
-    unsigned long addr=(unsigned long)(frame->addr);
+void trap_memory_handler(ExceptionInfo *info) {
+    unsigned long addr=(unsigned long)(info->addr);
     unsigned long userstackbottom=user_stack_bot();
     unsigned long i;
 
@@ -317,8 +321,8 @@ void trap_memory_handler(ExceptionInfo *frame) {
     }
 }
 
-void trap_math_handler(ExceptionInfo *frame) {
-    switch(frame->code){
+void trap_math_handler(ExceptionInfo *info) {
+    switch(info->code){
         case TRAP_MATH_INTDIV:
             printf("Integer divide by zero \n");
             break;
@@ -355,8 +359,8 @@ void trap_math_handler(ExceptionInfo *frame) {
     kernel_Exit(ERROR);
 }
 
-void trap_tty_receive_handler(ExceptionInfo *frame) {
-    int tty_id = (frame->code);
+void trap_tty_receive_handler(ExceptionInfo *info) {
+    int tty_id = (info->code);
     int n_received;
 
     n_received = TtyReceive(tty_id,yalnix_term[tty_id].read_buf+yalnix_term[tty_id].n_buf_char,TERMINAL_MAX_LINE);
@@ -367,7 +371,7 @@ void trap_tty_receive_handler(ExceptionInfo *frame) {
     }
 }
 
-void trap_tty_transmit_handler(ExceptionInfo *frame) {
-    int tty_id = (frame->code);
+void trap_tty_transmit_handler(ExceptionInfo *info) {
+    int tty_id = (info->code);
     ContextSwitch(switch_sf,currentProc->ctx,currentProc,yalnix_term[tty_id].writingProc);
 }

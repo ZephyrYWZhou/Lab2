@@ -47,13 +47,13 @@ int kernel_Fork(void) {
     }
 }
 
-int kernel_Exec(char *filename, char **argvec, ExceptionInfo *frame) {
+int kernel_Exec(char *filename, char **argvec, ExceptionInfo *info) {
     int status;
     if (filename == NULL) {
         return ERROR;
     }
 
-    status = LoadProgram(filename, argvec, frame);
+    status = LoadProgram(filename, argvec, info);
 
     if (status == -1) {
         return ERROR;

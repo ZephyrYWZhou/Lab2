@@ -19,7 +19,7 @@
  *  is no longer runnable, and this function returns -2 for errors
  *  in this case.
  */
-int LoadProgram(char *name, char **args, ExceptionInfo *frame)
+int LoadProgram(char *name, char **args, ExceptionInfo *info)
 {
     int fd;
     int status;
@@ -158,7 +158,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
      */
 
     
-    frame->sp = (char*)cpp;
+    info->sp = (char*)cpp;
 
     /*
      *  Free all the old physical memory belonging to this process,
@@ -300,7 +300,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
      *  Set the entry point in the exception frame.
      */
     /* >>>> Initialize pc for the current process to (void *)li.entry */
-    frame->pc = (void *)li.entry;
+    info->pc = (void *)li.entry;
     /*
      *  Now, finally, build the argument list on the new stack.
      */
@@ -329,9 +329,9 @@ int LoadProgram(char *name, char **args, ExceptionInfo *frame)
      *>>>> current process to 0.
      *>>>> Initialize psr for the current process to 0.
      */
-    frame->psr = 0;
+    info->psr = 0;
     for (i = 0; i < NUM_REGS; i++) {
-        frame->regs[i] = 0;
+        info->regs[i] = 0;
     }
     return (0);
 }

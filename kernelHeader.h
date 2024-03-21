@@ -61,7 +61,7 @@ extern phys_frame *free_frames_head; /* head of free phys frames */
 extern unsigned long next_PT_vaddr; /* data structure for marking allocated page table */
 extern int half_full;
 extern int free_frame_cnt;
-typedef void (*interruptHandler)(ExceptionInfo *frame);
+typedef void (*interruptHandler)(ExceptionInfo *info);
 extern interruptHandler interruptVector[TRAP_VECTOR_SIZE];
 extern pte *pt_r1;
 extern pte idle_pt_r0[PAGE_TABLE_LEN];
@@ -78,7 +78,7 @@ extern int vm_enabled;
 
 /* -------------Kernel call functions declaration------------- */
 extern int kernel_Fork(void);
-extern int kernel_Exec(char *filename, char **argvec, ExceptionInfo *frame);
+extern int kernel_Exec(char *filename, char **argvec, ExceptionInfo *info);
 extern void kernel_Exit(int status);
 extern int kernel_Wait(int *status_ptr);
 extern int kernel_Getpid(void);
@@ -88,13 +88,13 @@ extern int kernel_Ttyread(int tty_id, void *buf, int len);
 extern int kernel_Ttywrite(int tty_id, void *buf, int len);
 
 /* -------------Trap handlers declaration------------- */
-void trap_kernel_handler(ExceptionInfo *frame);
-void trap_clock_handler(ExceptionInfo *frame);
-void trap_illegal_handler(ExceptionInfo *frame);
-void trap_memory_handler(ExceptionInfo *frame);
-void trap_math_handler(ExceptionInfo *frame);
-void trap_tty_receive_handler(ExceptionInfo *frame);
-void trap_tty_transmit_handler(ExceptionInfo *frame);
+void trap_kernel_handler(ExceptionInfo *info);
+void trap_clock_handler(ExceptionInfo *info);
+void trap_illegal_handler(ExceptionInfo *info);
+void trap_memory_handler(ExceptionInfo *info);
+void trap_math_handler(ExceptionInfo *info);
+void trap_tty_receive_handler(ExceptionInfo *info);
+void trap_tty_transmit_handler(ExceptionInfo *info);
 
 
 /* -------------Context switch functions declaration------------- */
@@ -107,7 +107,7 @@ SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2);
 SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2);
 
 /* -------------Helper function declaration------------- */
-int LoadProgram(char *name, char **args, ExceptionInfo *frame);
+int LoadProgram(char *name, char **args, ExceptionInfo *info);
 int used_pgn_r0(void);
 unsigned long get_free_page(void);
 void remove_used_page(pte *p);
