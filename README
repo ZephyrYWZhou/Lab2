@@ -7,4 +7,6 @@ Test result and analysis of the provided tests:
 | trapillegal   | Pass! TRAP_ILLEGAL trap invoked        |
 | trapmath      | Pass! TRAP_MATH trap invoked           |
 | trapmemory    | Pass! TRAP_MEMORY trap invoked         |
-| delaytest     | Fail! illegal memory access invoked    |
+| delaytest     | Pass! delay invoked                    |
+| exectest      | ****! fail to make exec work...        |
+| brktest       | Pass! no error message returned        |
