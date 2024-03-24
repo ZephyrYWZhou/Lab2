@@ -19,13 +19,14 @@ Test result and analysis of the provided tests:
 | forktest2b    | Pass! CHILD PARENT ... correctly with delay          |
 | forktest3     | Pass! CHILD PARENT ... correctly with mem&pid        |
 | ttyread1      | ****! Booting correctly, fail to print               |
-| ttywrite1
-| ttywrite2
-| ttywrite3
+| ttywrite1     |
+| ttywrite2     |
+| ttywrite3     |
 | forkwait0c    | Pass! CHILD PARENT callings function well            | => child calls wait()
 | forkwait0p    | Pass! CHILD PARENT callings function well            | => parent calls wait()
 | forkwait1     | Pass! "GOOD!" printed with Wiat() works well         |
 | forkwait1b    | Pass! "GOOD!" in all 10 loops with pid & status      |
 | forkwair1c    | Pass! all pids recognized and have status 1234567    |
 | forkwait1d    | Pass! all pids recog. with correct status&FORKWAIT   | => child pid from 2 to 11 all work
-|
+| console       |
+| shell         |
