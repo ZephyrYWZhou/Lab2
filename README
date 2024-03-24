@@ -1,20 +1,31 @@
 Test result and analysis of the provided tests:
-------------------------------------------------------------------
-| Test Name:    | Test result and analysis:                     |
-| init1         | Pass! Exit() functions well                   |
-| init2         | Pass! Delay() functions well                  |
-| init3         | Pass! Getpid() functions well                 |
-| trapillegal   | Pass! TRAP_ILLEGAL trap invoked               |
-| trapmath      | Pass! TRAP_MATH trap invoked                  |
-| trapmemory    | Pass! TRAP_MEMORY trap invoked                |
-| delaytest     | Pass! delay invoked                           |
-| exectest      | ****! fail to make exec work...               |
-| brktest       | Pass! no error message returned               |
-| bigstack      | Pass! no error message returned               |
-| blowstack     | Pass? ...                                     |
-| forktest0     | Pass! CHILD traceprinted                      |
-| forktest1     | Pass! CHILD PARENT printed in correct order   |
-| forktest1b    | Pass! CHILD PARENT printed with pid           |
-| forktest2     | Pass! CHILD PARENT recurse correctly          |
-| forktest2b    | Pass! CHILD PARENT ... correctly with delay   |
-| forktest3     | Pass! CHILD PARENT ... correctly with mem&pid |
+------------------------------------------------------------------------
+| Test Name:    | Test result and analysis:                            |
+| init1         | Pass! Exit() functions well                          |
+| init2         | Pass! Delay() functions well                         |
+| init3         | Pass! Getpid() functions well                        |
+| trapillegal   | Pass! TRAP_ILLEGAL trap invoked                      |
+| trapmath      | Pass! TRAP_MATH trap invoked                         |
+| trapmemory    | Pass! TRAP_MEMORY trap invoked                       |
+| delaytest     | Pass! delay invoked                                  |
+| exectest      | ****! fail to make exec work...                      |
+| brktest       | Pass! no error message returned                      |
+| bigstack      | Pass! no error message returned                      |
+| blowstack     | ****! ...                                            |
+| forktest0     | Pass! CHILD traceprinted                             |
+| forktest1     | Pass! CHILD PARENT printed in correct order          |
+| forktest1b    | Pass! CHILD PARENT printed with pid                  |
+| forktest2     | Pass! CHILD PARENT recurse correctly                 |
+| forktest2b    | Pass! CHILD PARENT ... correctly with delay          |
+| forktest3     | Pass! CHILD PARENT ... correctly with mem&pid        |
+| ttyread1      | ****! Booting correctly, fail to print               |
+| ttywrite1
+| ttywrite2
+| ttywrite3
+| forkwait0c    | Pass! CHILD PARENT callings function well            | => child calls wait()
+| forkwait0p    | Pass! CHILD PARENT callings function well            | => parent calls wait()
+| forkwait1     | Pass! "GOOD!" printed with Wiat() works well         |
+| forkwait1b    | Pass! "GOOD!" in all 10 loops with pid & status      |
+| forkwair1c    | Pass! all pids recognized and have status 1234567    |
+| forkwait1d    | Pass! all pids recog. with correct status&FORKWAIT   | => child pid from 2 to 11 all work
+|
