@@ -8,7 +8,7 @@ Test result and analysis of the provided tests:
 | trapmath      | Pass! TRAP_MATH trap invoked                         |
 | trapmemory    | Pass! TRAP_MEMORY trap invoked                       |
 | delaytest     | Pass! delay invoked                                  |
-| exectest      | ****! fail to make exec work...                      |
+| exectest      | Pass! Able to execute program                        |
 | brktest       | Pass! no error message returned                      |
 | bigstack      | Pass! no error message returned                      |
 | blowstack     | ****! ...                                            |

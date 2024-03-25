@@ -52,6 +52,7 @@ int kernel_Exec(char *filename, char **argvec, ExceptionInfo *info) {
     if (filename == NULL) {
         return ERROR;
     }
+    // TracePrintf(0, "kernel_exec filename: %s\n", filename);
 
     status = LoadProgram(filename, argvec, info);
 
