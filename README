@@ -10,7 +10,7 @@ Test result and analysis of the provided tests:
 | trapmath      | Pass! TRAP_MATH trap invoked                         |
 | trapmemory    | Pass! TRAP_MEMORY trap invoked                       |
 | delaytest     | Pass! delay invoked                                  |
-| exectest      | Pass! Able to execute program                        |
+| exectest      | Pass! able to execute program                        |
 | brktest       | Pass! no error message returned                      |
 | bigstack      | Pass! no error message returned                      |
 | blowstack     | Pass! fflush and foo works well for every depth loop |
@@ -21,9 +21,9 @@ Test result and analysis of the provided tests:
 | forktest2b    | Pass! CHILD PARENT recurse correctly with delay      |
 | forktest3     | Pass! CHILD PARENT recurse correctly with mem&pid    |
 | ttyread1      | Pass! TtyRead works well with correct termianls      | => terminal specified by tty_id
-| ttywrite1     |
-| ttywrite2     |
-| ttywrite3     |
+| ttywrite1     | Pass! prints line to specified terminal              |
+| ttywrite2     | Pass! prints correct number of lines to terminal     |
+| ttywrite3     | Pass! prints CHILD and then PARENT to terminal       |
 | forkwait0c    | Pass! CHILD PARENT callings function well            | => child calls wait()
 | forkwait0p    | Pass! CHILD PARENT callings function well            | => parent calls wait()
 | forkwait1     | Pass! "GOOD!" printed with Wiat() works well         |
