@@ -20,7 +20,7 @@ Test result and analysis of the provided tests:
 | forktest2     | Pass! CHILD PARENT recurse correctly                 |
 | forktest2b    | Pass! CHILD PARENT recurse correctly with delay      |
 | forktest3     | Pass! CHILD PARENT recurse correctly with mem&pid    |
-| ttyread1      | ****! Booting correctly, fail to print               |
+| ttyread1      | Pass! TtyRead works well with correct termianls      | => terminal specified by tty_id
 | ttywrite1     |
 | ttywrite2     |
 | ttywrite3     |
