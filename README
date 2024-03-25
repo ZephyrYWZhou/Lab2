@@ -30,5 +30,5 @@ Test result and analysis of the provided tests:
 | forkwait1b    | Pass! "GOOD!" in all 10 loops with pid & status      |
 | forkwair1c    | Pass! all pids recognized and have status 1234567    |
 | forkwait1d    | Pass! all pids recog. with correct status&FORKWAIT   | => child pid from 2 to 11 all work
-| console       |
-| shell         |
+| console       | Pass! console starts on terminal 0                   |
+| shell         | Pass! shell starts correctly and executes programs   | 
