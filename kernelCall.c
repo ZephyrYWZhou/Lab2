@@ -124,7 +124,7 @@ int kernel_Getpid(void) {
 }
 
 int kernel_Brk(void *addr) {
-    if (addr==NULL) {
+    if (addr == NULL) {
         return ERROR;
     }
     if ((unsigned long)addr+PAGESIZE>user_stack_bot()) {
@@ -132,19 +132,19 @@ int kernel_Brk(void *addr) {
     }
 
     unsigned long i, pn_addr, pn_brk;
-    pn_addr=UP_TO_PAGE((unsigned long)addr)>>PAGESHIFT;
-    pn_brk=UP_TO_PAGE((unsigned long)currentProc->brk)>>PAGESHIFT;
+    pn_addr = UP_TO_PAGE((unsigned long)addr)>>PAGESHIFT;
+    pn_brk = UP_TO_PAGE((unsigned long)currentProc->brk)>>PAGESHIFT;
 
-    if (pn_addr>=pn_brk) {
-        if (pn_addr-pn_brk>free_frame_cnt) {
+    if (pn_addr >= pn_brk) {
+        if (pn_addr-pn_brk > free_frame_cnt) {
             return ERROR;
         }
         for (i=MEM_INVALID_PAGES;i<pn_addr;i++) {
-            if (currentProc->pt_r0[i].valid==0) {
-                currentProc->pt_r0[i].valid=1;
-                currentProc->pt_r0[i].uprot=PROT_READ|PROT_WRITE;
-                currentProc->pt_r0[i].kprot=PROT_READ|PROT_WRITE;
-                currentProc->pt_r0[i].pfn=get_free_page();
+            if (currentProc->pt_r0[i].valid == 0) {
+                currentProc->pt_r0[i].valid = 1;
+                currentProc->pt_r0[i].uprot = PROT_READ|PROT_WRITE;
+                currentProc->pt_r0[i].kprot = PROT_READ|PROT_WRITE;
+                currentProc->pt_r0[i].pfn = get_free_page();
             }
         }
     }
@@ -152,11 +152,11 @@ int kernel_Brk(void *addr) {
         for (i = pn_brk; i > pn_addr; i--) {
             if (currentProc->pt_r0[i].valid == 1) {
                 remove_used_page((currentProc->pt_r0)+i);
-                currentProc->pt_r0[i].valid=0;
+                currentProc->pt_r0[i].valid = 0;
             }
         }
     }
-    currentProc->brk=(unsigned long)addr;
+    currentProc->brk = (unsigned long)addr;
     return 0;
 }
 
@@ -175,12 +175,12 @@ int kernel_Delay(int clock_ticks) {
 }
 
 int kernel_Ttyread(int tty_id, void *buf, int len) {
-    int return_len=0;
-    if (len<0||buf==NULL) {
+    int return_len = 0;
+    if (len<0||buf == NULL) {
         return ERROR;
     }
 
-    if (yalnix_term[tty_id].n_buf_char==0) {
+    if (yalnix_term[tty_id].n_buf_char == 0) {
         add_read_queue(tty_id,currentProc);
         ContextSwitch(tty_sf,currentProc->ctx,currentProc,next_ready_queue());
     }

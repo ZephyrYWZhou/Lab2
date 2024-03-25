@@ -13,13 +13,13 @@ Test result and analysis of the provided tests:
 | exectest      | Pass! Able to execute program                        |
 | brktest       | Pass! no error message returned                      |
 | bigstack      | Pass! no error message returned                      |
-| blowstack     | ****! ...                                            |
+| blowstack     | Pass! fflush and foo works well for every depth loop |
 | forktest0     | Pass! CHILD traceprinted                             |
 | forktest1     | Pass! CHILD PARENT printed in correct order          |
 | forktest1b    | Pass! CHILD PARENT printed with pid                  |
 | forktest2     | Pass! CHILD PARENT recurse correctly                 |
-| forktest2b    | Pass! CHILD PARENT ... correctly with delay          |
-| forktest3     | Pass! CHILD PARENT ... correctly with mem&pid        |
+| forktest2b    | Pass! CHILD PARENT recurse correctly with delay      |
+| forktest3     | Pass! CHILD PARENT recurse correctly with mem&pid    |
 | ttyread1      | ****! Booting correctly, fail to print               |
 | ttywrite1     |
 | ttywrite2     |
