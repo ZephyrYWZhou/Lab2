@@ -10,7 +10,6 @@ int kernel_Fork(void) {
     child_process->ctx = (SavedContext*)malloc(sizeof(SavedContext));
     allocate_pt(child_process);
 
-/************************************************************/
 /* check mem */
 
     if (used_pgn_r0() > free_frame_cnt) {
@@ -21,7 +20,6 @@ int kernel_Fork(void) {
         return ERROR;
     }
 
-/************************************************************/
 /* initialize the child pcb */
 
     child_process->pid = next_pid++;
@@ -106,7 +104,6 @@ int kernel_Wait(int *status_ptr) {
         ContextSwitch(wait_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
-/************************************************************/
 /* free the status in FIFO */
 
     return_pid = current_process->statusQ->pid;
@@ -185,7 +182,6 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
         ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
-/************************************************************/
 /* copy chars to buf */
 
     if (yalnix_term[tty_id].n_buf_char <= len) {
@@ -211,7 +207,6 @@ int kernel_Ttywrite(int tty_id, void *buf, int len) {
         return ERROR;
     }
 
-/************************************************************/
 /* check if writing is busy */
     if (yalnix_term[tty_id].writingProc != NULL) {
         add_write_queue(tty_id, current_process);
