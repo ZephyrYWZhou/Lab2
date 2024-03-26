@@ -138,9 +138,9 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      */
     usedpages = 0;
     for (i = 0; i < PAGE_TABLE_LEN - KERNEL_STACK_PAGES; i++) {
-        if (currentProc->pt_r0[i].valid == 1) {
-            currentProc->pt_r0[i].uprot = PROT_READ | PROT_WRITE;
-            currentProc->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
+        if (current_process->pt_r0[i].valid == 1) {
+            current_process->pt_r0[i].uprot = PROT_READ | PROT_WRITE;
+            current_process->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
             usedpages++;
         }
     }
@@ -177,10 +177,10 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
 
     for (i=0;i<PAGE_TABLE_LEN-KERNEL_STACK_PAGES;i++) {
-        if (currentProc->pt_r0[i].valid) {
-            remove_used_page(&(currentProc->pt_r0[i]));//XXX
-            currentProc->pt_r0[i].valid = 0;
-            WriteRegister(REG_TLB_FLUSH, (unsigned long)((currentProc->pt_r0)+i));
+        if (current_process->pt_r0[i].valid) {
+            remove_used_page(&(current_process->pt_r0[i]));//XXX
+            current_process->pt_r0[i].valid = 0;
+            WriteRegister(REG_TLB_FLUSH, (unsigned long)((current_process->pt_r0)+i));
         }
     }
     /*
@@ -196,7 +196,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      *>>>> Region 0 page table unused (and thus invalid)
      */
     for (i =0;i<MEM_INVALID_PAGES;i++) {
-        currentProc->pt_r0[i].valid = 0;
+        current_process->pt_r0[i].valid = 0;
     }
 
 
@@ -210,10 +210,10 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      *>>>>     pfn   = a new page of physical memory
      */
     for (;i<MEM_INVALID_PAGES+text_npg;i++) {
-        currentProc->pt_r0[i].uprot = PROT_READ | PROT_EXEC;
-        currentProc->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
-        currentProc->pt_r0[i].valid = 1;
-        currentProc->pt_r0[i].pfn = get_free_page();
+        current_process->pt_r0[i].uprot = PROT_READ | PROT_EXEC;
+        current_process->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
+        current_process->pt_r0[i].valid = 1;
+        current_process->pt_r0[i].pfn = get_free_page();
     }
 
 
@@ -227,10 +227,10 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      *>>>>     pfn   = a new page of physical memory
      */
     for (; i<MEM_INVALID_PAGES+text_npg+data_bss_npg;i++) {
-        currentProc->pt_r0[i].uprot = PROT_READ | PROT_WRITE;
-        currentProc->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
-        currentProc->pt_r0[i].valid = 1;
-        currentProc->pt_r0[i].pfn = get_free_page();
+        current_process->pt_r0[i].uprot = PROT_READ | PROT_WRITE;
+        current_process->pt_r0[i].kprot = PROT_READ | PROT_WRITE;
+        current_process->pt_r0[i].valid = 1;
+        current_process->pt_r0[i].pfn = get_free_page();
         }
 
     /* And finally the user stack pages */
@@ -246,10 +246,10 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      */
     /* Note that the stack is growing down, so the page is off by one */
     for (i=0;i<stack_npg;i++) {
-        currentProc->pt_r0[user_stack_limit-i].uprot = PROT_READ | PROT_WRITE;
-        currentProc->pt_r0[user_stack_limit-i].kprot = PROT_READ | PROT_WRITE;
-        currentProc->pt_r0[user_stack_limit-i].valid = 1;
-        currentProc->pt_r0[user_stack_limit-i].pfn = get_free_page();
+        current_process->pt_r0[user_stack_limit-i].uprot = PROT_READ | PROT_WRITE;
+        current_process->pt_r0[user_stack_limit-i].kprot = PROT_READ | PROT_WRITE;
+        current_process->pt_r0[user_stack_limit-i].valid = 1;
+        current_process->pt_r0[user_stack_limit-i].pfn = get_free_page();
         }
     /*
      *  All pages for the new address space are now in place.  Flush
@@ -286,7 +286,7 @@ int LoadProgram(char *name, char **args, ExceptionInfo *info)
      *>>>> pages, set each PTE's kprot to PROT_READ | PROT_EXEC.
      */
     for (; i < MEM_INVALID_PAGES + text_npg; i++) {
-        currentProc->pt_r0[i].kprot = PROT_READ | PROT_EXEC;
+        current_process->pt_r0[i].kprot = PROT_READ | PROT_EXEC;
     }
 
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);

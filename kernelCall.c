@@ -4,42 +4,42 @@ int kernel_Fork(void) {
     int child_pid;
     unsigned long i;
     ProcessControlBlock *temp;
-    ProcessControlBlock *childProc;
+    ProcessControlBlock *child_process;
 
-    childProc = (ProcessControlBlock*)malloc(sizeof(ProcessControlBlock));
-    childProc->ctx = (SavedContext*)malloc(sizeof(SavedContext));
-    allocate_pt(childProc);
+    child_process = (ProcessControlBlock*)malloc(sizeof(ProcessControlBlock));
+    child_process->ctx = (SavedContext*)malloc(sizeof(SavedContext));
+    allocate_pt(child_process);
 
 /************************************************************/
 /* check mem */
 
     if (used_pgn_r0() > free_frame_cnt) {
         TracePrintf(0,"kernel_fork ERROR: not enough phys mem for creat Region0.\n");
-        free(childProc->ctx);
-        free(childProc->pt_r0);
-        free(childProc);
+        free(child_process->ctx);
+        free(child_process->pt_r0);
+        free(child_process);
         return ERROR;
     }
 
 /************************************************************/
 /* initialize the child pcb */
 
-    childProc->pid = next_pid++;
-    childProc->parent = currentProc;
-    childProc->next = NULL;
-    childProc->brk = currentProc->brk;
-    childProc->n_child = 0;
-    childProc->delay_clock = 0;
-    childProc->statusQ = NULL;
+    child_process->pid = next_pid++;
+    child_process->parent = current_process;
+    child_process->next = NULL;
+    child_process->brk = current_process->brk;
+    child_process->n_child = 0;
+    child_process->delay_clock = 0;
+    child_process->statusQ = NULL;
 
-    child_pid=childProc->pid;
-    currentProc->n_child++;
-    temp = currentProc;
+    child_pid=child_process->pid;
+    current_process->n_child++;
+    temp = current_process;
 
 
-    ContextSwitch(fork_sf,temp->ctx,temp,childProc);
+    ContextSwitch(fork_sf,temp->ctx,temp,child_process);
 
-    if (currentProc->pid == temp->pid) {
+    if (current_process->pid == temp->pid) {
         return child_pid;
     }
     else{
@@ -66,61 +66,61 @@ int kernel_Exec(char *filename, char **argvec, ExceptionInfo *info) {
 }
 
 void kernel_Exit(int status) {
-    ProcessControlBlock *tempProc;
+    ProcessControlBlock *temp_process;
 
-    if (currentProc->pid==0||currentProc->pid==1) {
+    if (current_process->pid==0||current_process->pid==1) {
         Halt();
     }
 
     /*make al the children orphans */
     delete_child();
 
-    if (currentProc->parent == NULL) {
-        ContextSwitch(exit_sf, currentProc->ctx, currentProc, next_ready_queue());
+    if (current_process->parent == NULL) {
+        ContextSwitch(exit_sf, current_process->ctx, current_process, next_ready_queue());
         return;
     }
 
     /* add status to the Q of parent */
     add_status(status);
 
-    tempProc = next_wait_queue();
+    temp_process = next_wait_queue();
 
-    if (tempProc == NULL) {
+    if (temp_process == NULL) {
         fflush(stdout);
-        ContextSwitch(exit_sf, currentProc->ctx, currentProc, next_ready_queue());
+        ContextSwitch(exit_sf, current_process->ctx, current_process, next_ready_queue());
     }
     else {
         fflush(stdout);
-        ContextSwitch(exit_sf, currentProc->ctx, currentProc, tempProc);
+        ContextSwitch(exit_sf, current_process->ctx, current_process, temp_process);
     }
 }
 
 int kernel_Wait(int *status_ptr) {
     int return_pid;
     StatusQueue *temp_status;
-    if (currentProc->n_child == 0) {
+    if (current_process->n_child == 0) {
         return ERROR;
     }
 
-    if (currentProc->statusQ == NULL) {
-        ContextSwitch(wait_sf, currentProc->ctx, currentProc, next_ready_queue());
+    if (current_process->statusQ == NULL) {
+        ContextSwitch(wait_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
 /************************************************************/
 /* free the status in FIFO */
 
-    return_pid = currentProc->statusQ->pid;
+    return_pid = current_process->statusQ->pid;
 
-    *(status_ptr) = currentProc->statusQ->status;
-    temp_status = currentProc->statusQ;
-    currentProc->statusQ = currentProc->statusQ->next;
+    *(status_ptr) = current_process->statusQ->status;
+    temp_status = current_process->statusQ;
+    current_process->statusQ = current_process->statusQ->next;
 
     free(temp_status);
     return return_pid;
 }
 
 int kernel_Getpid(void) {
-    return currentProc->pid;
+    return current_process->pid;
 }
 
 int kernel_Brk(void *addr) {
@@ -133,30 +133,30 @@ int kernel_Brk(void *addr) {
 
     unsigned long i, pn_addr, pn_brk;
     pn_addr = UP_TO_PAGE((unsigned long)addr)>>PAGESHIFT;
-    pn_brk = UP_TO_PAGE((unsigned long)currentProc->brk)>>PAGESHIFT;
+    pn_brk = UP_TO_PAGE((unsigned long)current_process->brk)>>PAGESHIFT;
 
     if (pn_addr >= pn_brk) {
         if (pn_addr-pn_brk > free_frame_cnt) {
             return ERROR;
         }
         for (i = MEM_INVALID_PAGES; i < pn_addr;i++) {
-            if (currentProc->pt_r0[i].valid == 0) {
-                currentProc->pt_r0[i].valid = 1;
-                currentProc->pt_r0[i].uprot = PROT_READ|PROT_WRITE;
-                currentProc->pt_r0[i].kprot = PROT_READ|PROT_WRITE;
-                currentProc->pt_r0[i].pfn = get_free_page();
+            if (current_process->pt_r0[i].valid == 0) {
+                current_process->pt_r0[i].valid = 1;
+                current_process->pt_r0[i].uprot = PROT_READ|PROT_WRITE;
+                current_process->pt_r0[i].kprot = PROT_READ|PROT_WRITE;
+                current_process->pt_r0[i].pfn = get_free_page();
             }
         }
     }
     else {
         for (i = pn_brk; i > pn_addr; i--) {
-            if (currentProc->pt_r0[i].valid == 1) {
-                remove_used_page((currentProc->pt_r0)+i);
-                currentProc->pt_r0[i].valid = 0;
+            if (current_process->pt_r0[i].valid == 1) {
+                remove_used_page((current_process->pt_r0)+i);
+                current_process->pt_r0[i].valid = 0;
             }
         }
     }
-    currentProc->brk = (unsigned long)addr;
+    current_process->brk = (unsigned long)addr;
     return 0;
 }
 
@@ -166,9 +166,9 @@ int kernel_Delay(int clock_ticks) {
     if (clock_ticks<0) {
         return ERROR;
     }
-    currentProc->delay_clock = clock_ticks;
+    current_process->delay_clock = clock_ticks;
     if (clock_ticks>0) {
-        ContextSwitch(delay_sf, currentProc->ctx, currentProc, next_ready_queue());
+        ContextSwitch(delay_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
     return 0;
@@ -181,8 +181,8 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
     }
 
     if (yalnix_term[tty_id].n_buf_char == 0) {
-        add_read_queue(tty_id, currentProc);
-        ContextSwitch(tty_sf, currentProc->ctx, currentProc, next_ready_queue());
+        add_read_queue(tty_id, current_process);
+        ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
 /************************************************************/
@@ -200,7 +200,7 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
 
         return_len = len;
         if (yalnix_term[tty_id].readQ_head!=NULL) {
-            ContextSwitch(switch_sf, currentProc->ctx, currentProc, next_read_queue(tty_id));
+            ContextSwitch(switch_sf, current_process->ctx, current_process, next_read_queue(tty_id));
         }
     }
     return return_len;
@@ -214,18 +214,18 @@ int kernel_Ttywrite(int tty_id, void *buf, int len) {
 /************************************************************/
 /* check if writing is busy */
     if (yalnix_term[tty_id].writingProc != NULL) {
-        add_write_queue(tty_id, currentProc);
-        ContextSwitch(tty_sf, currentProc->ctx, currentProc, next_ready_queue());
+        add_write_queue(tty_id, current_process);
+        ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
     }
 
     yalnix_term[tty_id].write_buf = buf;
     TtyTransmit(tty_id,yalnix_term[tty_id].write_buf,len);
 
-    yalnix_term[tty_id].writingProc = currentProc;
-    ContextSwitch(tty_sf, currentProc->ctx, currentProc, next_ready_queue());
+    yalnix_term[tty_id].writingProc = current_process;
+    ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
     yalnix_term[tty_id].writingProc = NULL;
     if (yalnix_term[tty_id].writeQ_head != NULL) {
-        ContextSwitch(switch_sf, currentProc->ctx, currentProc, next_write_queue(tty_id));
+        ContextSwitch(switch_sf, current_process->ctx, current_process, next_write_queue(tty_id));
     }
 
     return len;

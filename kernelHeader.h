@@ -65,16 +65,16 @@ typedef void (*interruptHandler)(ExceptionInfo *info);
 extern interruptHandler interruptVector[TRAP_VECTOR_SIZE];
 extern pte *pt_r1;
 extern pte idle_pt_r0[PAGE_TABLE_LEN];
-extern pcb *currentProc;
+extern pcb *current_process;
 extern pcb *readyQ_head, *readyQ_end;
 extern pcb *waitQ_head, *waitQ_end;
-extern pcb *delayQ_head;
-extern pcb *idleProc;
+extern pcb *delay_queue_head;
+extern pcb *idle_process;
 extern terminal yalnix_term[NUM_TERMINALS];
 extern char kernel_stack_buff[PAGESIZE*KERNEL_STACK_PAGES];
 extern unsigned int next_pid;
 extern void *kernel_brk;
-extern int vm_enabled;
+extern int VM_flag;
 
 /* -------------Kernel call functions declaration------------- */
 extern int kernel_Fork(void);

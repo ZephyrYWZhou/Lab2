@@ -6,7 +6,7 @@ int used_pgn_r0(void) {
     int used_pgn=0;
     int i;
     for(i=0;i<PAGE_TABLE_LEN;i++)
-        if(currentProc->pt_r0[i].valid)
+        if(current_process->pt_r0[i].valid)
             used_pgn++;
     return used_pgn;
 }
@@ -34,13 +34,13 @@ void delete_child(void) {
     ProcessControlBlock *tmp;
     tmp=readyQ_head;
     while(tmp!=NULL){
-        if(tmp->parent==currentProc)
+        if(tmp->parent==current_process)
             tmp->parent=NULL;
         tmp=tmp->next;
     }
     tmp=waitQ_head;
     while(tmp!=NULL){
-        if(tmp->parent==currentProc)
+        if(tmp->parent==current_process)
             tmp->parent=NULL;
         tmp=tmp->next;
     }
@@ -48,34 +48,34 @@ void delete_child(void) {
     for(i=0;i<NUM_TERMINALS;i++){
         tmp=yalnix_term[i].readQ_head;
         while(tmp!=NULL){
-            if(tmp->parent==currentProc)
+            if(tmp->parent==current_process)
                 tmp->parent=NULL;
             tmp=tmp->next;
         }
         tmp=yalnix_term[i].writeQ_head;
         while(tmp!=NULL){
-            if(tmp->parent==currentProc)
+            if(tmp->parent==current_process)
                 tmp->parent=NULL;
             tmp=tmp->next;
         }
     }
-    tmp=delayQ_head;
+    tmp=delay_queue_head;
     while(tmp!=NULL){
-        if(tmp->parent==currentProc)
+        if(tmp->parent==current_process)
             tmp->parent=NULL;
         tmp=tmp->next;
     }
 }
 
-/*add the status to currentproc status queue*/
+/*add the status to current_process status queue*/
 
 void add_status(int status) {
     StatusQueue *tmp;
-    tmp=currentProc->parent->statusQ;
+    tmp=current_process->parent->statusQ;
     if(tmp==NULL){
         tmp=(StatusQueue*)malloc(sizeof(StatusQueue));
-        currentProc->parent->statusQ=tmp;
-        tmp->pid=currentProc->pid;
+        current_process->parent->statusQ=tmp;
+        tmp->pid=current_process->pid;
         tmp->status=status;
         tmp->next=NULL;
     }
@@ -84,7 +84,7 @@ void add_status(int status) {
             tmp=tmp->next;
         tmp->next=(StatusQueue*)malloc(sizeof(StatusQueue));
         tmp=tmp->next;
-        tmp->pid=currentProc->pid;
+        tmp->pid=current_process->pid;
         tmp->status=status;
         tmp->next=NULL;
     }
@@ -132,7 +132,7 @@ void allocate_pt(pcb* p) {
 unsigned long user_stack_bot(void) {
     unsigned long i;
     i=(USER_STACK_LIMIT>>PAGESHIFT)-1;
-    while(currentProc->pt_r0[i].valid)
+    while(current_process->pt_r0[i].valid)
         i--;
     return i<<PAGESHIFT;
 }
@@ -156,8 +156,8 @@ void add_wait_queue(ProcessControlBlock *p) {
 }
 
 void add_delay_queue(ProcessControlBlock *p) {
-    p->next=delayQ_head->next;
-    delayQ_head->next=p;
+    p->next=delay_queue_head->next;
+    delay_queue_head->next=p;
 }
 
 void add_read_queue(int tty_id, ProcessControlBlock* p) {
@@ -219,13 +219,13 @@ ProcessControlBlock *next_wait_queue(void) {
     if(tmp==NULL) {
         return NULL;
     }
-    if(tmp->pid==currentProc->parent->pid){
+    if(tmp->pid==current_process->parent->pid){
         waitQ_head=tmp->next;
         if (waitQ_head==NULL) waitQ_end = NULL;
         return tmp;
     }
     while(tmp->next!=NULL){
-        if(tmp->next->pid==currentProc->parent->pid){
+        if(tmp->next->pid==current_process->parent->pid){
             return_pcb=tmp->next;
             tmp->next=return_pcb->next;
             if(return_pcb==waitQ_end){
@@ -245,7 +245,7 @@ ProcessControlBlock *next_wait_queue(void) {
 void update_delay_queue(void) {
     pcb *tmp;
     pcb *delay_pcb;
-    tmp=delayQ_head;
+    tmp=delay_queue_head;
     while(tmp->next!=NULL){
         tmp->next->delay_clock--;
         if(tmp->next->delay_clock==0){
@@ -261,7 +261,7 @@ void update_delay_queue(void) {
 /*switch function for conmen*/
 
 SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
-    if(p2==NULL)
+    if(p2 == NULL)
         return ((ProcessControlBlock*)p1)->ctx;
 
     struct pte *pt2;
@@ -270,8 +270,8 @@ SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
     WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
     WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
 
-    currentProc=(ProcessControlBlock*)p2;
-    if((ProcessControlBlock*)p1!=idleProc)
+    current_process=(ProcessControlBlock*)p2;
+    if((ProcessControlBlock*)p1 != idle_process)
         add_ready_queue((ProcessControlBlock*)p1);
 
     return ((ProcessControlBlock*)p2)->ctx;
@@ -286,7 +286,7 @@ SavedContext *init_sf(SavedContext *ctx, void *p1, void *p2) {
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     memcpy((void*)KERNEL_STACK_BASE,kernel_stack_buff,PAGESIZE*KERNEL_STACK_PAGES);
     memcpy(((pcb*)p2)->ctx,((pcb*)p1)->ctx,sizeof(SavedContext));
-    currentProc=p2;
+    current_process = p2;
     return ((pcb*)p2)->ctx;
 }
 
@@ -297,15 +297,15 @@ SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_delay_queue((ProcessControlBlock*)p1);
-        currentProc=idleProc;
-        return idleProc->ctx;
+        current_process=idle_process;
+        return idle_process->ctx;
     }
     else{
-        pte *pt2=((ProcessControlBlock*)p2)->pt_r0;
+        pte *pt2 = ((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_delay_queue((ProcessControlBlock*)p1);
-        currentProc=(ProcessControlBlock*)p2;
+        current_process = (ProcessControlBlock*)p2;
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
@@ -320,18 +320,18 @@ SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
     pt2=((ProcessControlBlock*)p2)->pt_r0;
     for(i=0;i<PAGE_TABLE_LEN;i++) {
         pt2[i].valid = 0;
-        if(currentProc->pt_r0[i].valid){
+        if(current_process->pt_r0[i].valid){
             pt2[i].valid = 1;
             if (i>=PAGE_TABLE_LEN-KERNEL_STACK_PAGES) pt2[i].uprot=PROT_NONE;
             else pt2[i].uprot=PROT_READ | PROT_WRITE;
             pt2[i].kprot= PROT_READ | PROT_WRITE;
             pt2[i].pfn = get_free_page();
-            currentProc->pt_r0[addi_pte_vpn].valid = 1;//XXX
-            currentProc->pt_r0[addi_pte_vpn].uprot = PROT_NONE;//XXX
-            currentProc->pt_r0[addi_pte_vpn].kprot = PROT_READ | PROT_WRITE;//XXX
-            currentProc->pt_r0[addi_pte_vpn].pfn = pt2[i].pfn;//XXX
+            current_process->pt_r0[addi_pte_vpn].valid = 1;//XXX
+            current_process->pt_r0[addi_pte_vpn].uprot = PROT_NONE;//XXX
+            current_process->pt_r0[addi_pte_vpn].kprot = PROT_READ | PROT_WRITE;//XXX
+            current_process->pt_r0[addi_pte_vpn].pfn = pt2[i].pfn;//XXX
             memcpy((void*)(addi_pte_vpn<<PAGESHIFT),(void *)(i<<PAGESHIFT),PAGESIZE);//XXX
-            currentProc->pt_r0[addi_pte_vpn].valid = 0;
+            current_process->pt_r0[addi_pte_vpn].valid = 0;
             WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         }
     }
@@ -339,7 +339,7 @@ SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
     WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
     WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
     memcpy(((ProcessControlBlock*)p2)->ctx,ctpx,sizeof(SavedContext));
-    currentProc=(ProcessControlBlock*)p2;
+    current_process=(ProcessControlBlock*)p2;
     add_ready_queue((ProcessControlBlock*)p1);
 
     return ((ProcessControlBlock*)p2)->ctx;
@@ -378,11 +378,11 @@ SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
     free((ProcessControlBlock*)p1);
 
     if(p2==NULL){
-        currentProc=idleProc;
-        return idleProc->ctx;
+        current_process=idle_process;
+        return idle_process->ctx;
     }
     else{
-        currentProc=(ProcessControlBlock*)p2;
+        current_process=(ProcessControlBlock*)p2;
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
@@ -394,15 +394,15 @@ SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_wait_queue((ProcessControlBlock*)p1);
-        currentProc=idleProc;
-        return idleProc->ctx;
+        current_process=idle_process;
+        return idle_process->ctx;
     }
     else{
         struct pte *pt2=((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_wait_queue((ProcessControlBlock*)p1);
-        currentProc=(ProcessControlBlock*)p2;
+        current_process=(ProcessControlBlock*)p2;
 
         return ((ProcessControlBlock*)p2)->ctx;
     }
@@ -414,14 +414,14 @@ SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2) {
     if(p2==NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
-        currentProc=idleProc;
-        return idleProc->ctx;
+        current_process=idle_process;
+        return idle_process->ctx;
     }
     else{
         pte *pt2=((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
-        currentProc=(ProcessControlBlock*)p2;
+        current_process=(ProcessControlBlock*)p2;
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
