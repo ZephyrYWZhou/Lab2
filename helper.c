@@ -10,10 +10,12 @@ void add_ready_queue(ProcessControlBlock *p) {
 }
 
 void add_wait_queue(ProcessControlBlock *p) {
-    if(waitQ_head == NULL)
+    if (waitQ_head == NULL) {
         waitQ_head = p;
-    else
+    }
+    else {
         waitQ_end->next = p;
+    }
     waitQ_end = p;
     waitQ_end->next = NULL;
 }
@@ -24,8 +26,9 @@ void add_delay_queue(ProcessControlBlock *p) {
 }
 
 void add_read_queue(int tty_id, ProcessControlBlock* p) {
-    if(yalnix_term[tty_id].readQ_head == NULL)
+    if (yalnix_term[tty_id].readQ_head == NULL) {
         yalnix_term[tty_id].readQ_head = p;
+    }
     else {
         yalnix_term[tty_id].readQ_end->next = p;
     }
@@ -34,8 +37,9 @@ void add_read_queue(int tty_id, ProcessControlBlock* p) {
 }
 
 void add_write_queue(int tty_id, ProcessControlBlock* p) {
-    if(yalnix_term[tty_id].writeQ_head == NULL)
+    if (yalnix_term[tty_id].writeQ_head == NULL) {
         yalnix_term[tty_id].writeQ_head = p;
+    }
     else {
         yalnix_term[tty_id].writeQ_end->next = p;
     }
@@ -63,7 +67,9 @@ void remove_used_page(pte *p) {
 }
 
 int get_new_page(pte * pt, unsigned long addr) {
-    if (free_frames_head->next == NULL) return 1;
+    if (free_frames_head->next == NULL) {
+        return 1;
+    } 
     phys_frame *tmp = free_frames_head->next;
     free_frames_head->next = tmp->next;
     free_frame_cnt--;
@@ -102,12 +108,11 @@ void allocate_pt(pcb* p) {
         pt_r1[idx].uprot = PROT_NONE;
     }
     else {
-        /* set appropriate virtual start address for r0 page table */
+        // set appropriate virtual start address for r0 page table
         p->pt_r0 = (struct pte*)next_PT_vaddr;
         next_PT_vaddr -= PAGESIZE*3/2;
 
-
-        /* whole frame is used, so clear half_full_vaddr and half_full_frame */
+        // whole frame is used, so clear half_full_vaddr and half_full_frame
         half_full = 0;
     }
 }
@@ -115,36 +120,41 @@ void allocate_pt(pcb* p) {
 void delete_child(void) {
     ProcessControlBlock *tmp;
     tmp = readyQ_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
+    while (tmp != NULL) {
+        if (tmp->parent == current_process) {
             tmp->parent = NULL;
+        }
         tmp = tmp->next;
     }
     tmp = waitQ_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
+    while(tmp != NULL) {
+        if(tmp->parent == current_process) {
             tmp->parent = NULL;
+        }
         tmp = tmp->next;
     }
     int i;
-    for(i = 0;i<NUM_TERMINALS;i++){
+    for (i = 0;i<NUM_TERMINALS;i++) {
         tmp = yalnix_term[i].readQ_head;
-        while(tmp != NULL){
-            if(tmp->parent == current_process)
+        while(tmp != NULL) {
+            if(tmp->parent == current_process) {
                 tmp->parent = NULL;
+            }
             tmp = tmp->next;
         }
         tmp = yalnix_term[i].writeQ_head;
-        while(tmp != NULL){
-            if(tmp->parent == current_process)
+        while (tmp != NULL) {
+            if (tmp->parent == current_process) {
                 tmp->parent = NULL;
+            }
             tmp = tmp->next;
         }
     }
     tmp = delay_queue_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
+    while (tmp != NULL) {
+        if (tmp->parent == current_process) {
             tmp->parent = NULL;
+        }
         tmp = tmp->next;
     }
 }
@@ -152,16 +162,17 @@ void delete_child(void) {
 void add_status(int status) {
     StatusQueue *tmp;
     tmp = current_process->parent->statusQ;
-    if(tmp == NULL){
+    if (tmp == NULL) {
         tmp = (StatusQueue*)malloc(sizeof(StatusQueue));
         current_process->parent->statusQ = tmp;
         tmp->pid = current_process->pid;
         tmp->status = status;
         tmp->next = NULL;
     }
-    else{
-        while(tmp->next != NULL)
+    else {
+        while(tmp->next != NULL) {
             tmp = tmp->next;
+        }
         tmp->next = (StatusQueue*)malloc(sizeof(StatusQueue));
         tmp = tmp->next;
         tmp->pid = current_process->pid;
@@ -173,29 +184,32 @@ void add_status(int status) {
 unsigned long user_stack_bot(void) {
     unsigned long i;
     i = (USER_STACK_LIMIT>>PAGESHIFT)-1;
-    while(current_process->pt_r0[i].valid)
+    while(current_process->pt_r0[i].valid) {
         i--;
+    }
     return i<<PAGESHIFT;
 }
 
 ProcessControlBlock *next_ready_queue(void) {
     ProcessControlBlock *return_pcb;
-    if(readyQ_head == NULL){
+    if (readyQ_head == NULL) {
         return NULL;
     }
 
     return_pcb = readyQ_head;
     readyQ_head = readyQ_head->next;
-    if(readyQ_head == NULL)
+    if (readyQ_head == NULL) {
         readyQ_end = NULL;
         return_pcb->next = NULL;
+    }
     return return_pcb;
 }
 
 ProcessControlBlock *next_read_queue(int tty_id) {
     ProcessControlBlock *return_pcb;
-    if(yalnix_term[tty_id].readQ_head == NULL)
+    if (yalnix_term[tty_id].readQ_head == NULL) {
         return NULL;
+    }
     return_pcb = yalnix_term[tty_id].readQ_head;
     yalnix_term[tty_id].readQ_head = yalnix_term[tty_id].readQ_head->next;
     return return_pcb;
@@ -203,8 +217,9 @@ ProcessControlBlock *next_read_queue(int tty_id) {
 
 ProcessControlBlock *next_write_queue(int tty_id) {
     ProcessControlBlock *return_pcb;
-    if(yalnix_term[tty_id].writeQ_head == NULL)
+    if (yalnix_term[tty_id].writeQ_head == NULL) {
         return NULL;
+    }
     return_pcb = yalnix_term[tty_id].writeQ_head;
     yalnix_term[tty_id].writeQ_head = yalnix_term[tty_id].writeQ_head->next;
     return return_pcb;
@@ -217,16 +232,16 @@ ProcessControlBlock *next_wait_queue(void) {
     if(tmp == NULL) {
         return NULL;
     }
-    if(tmp->pid == current_process->parent->pid){
+    if (tmp->pid == current_process->parent->pid) {
         waitQ_head = tmp->next;
         if (waitQ_head == NULL) waitQ_end = NULL;
         return tmp;
     }
-    while(tmp->next != NULL){
-        if(tmp->next->pid == current_process->parent->pid){
+    while (tmp->next != NULL) {
+        if (tmp->next->pid == current_process->parent->pid) {
             return_pcb = tmp->next;
             tmp->next = return_pcb->next;
-            if(return_pcb == waitQ_end){
+            if (return_pcb == waitQ_end) {
                 waitQ_end = tmp;
             }
             return_pcb->next = NULL;
@@ -234,7 +249,6 @@ ProcessControlBlock *next_wait_queue(void) {
         }
         tmp = tmp->next;
     }
-
     return NULL;
 }
 
@@ -242,21 +256,23 @@ void update_delay_queue(void) {
     pcb *tmp;
     pcb *delay_pcb;
     tmp = delay_queue_head;
-    while(tmp->next != NULL){
+    while (tmp->next != NULL) {
         tmp->next->delay_clock--;
-        if(tmp->next->delay_clock == 0){
+        if (tmp->next->delay_clock == 0) {
             delay_pcb = tmp->next;
             tmp->next = tmp->next->next;
             add_ready_queue(delay_pcb);
         }
-        else
+        else {
             tmp = tmp->next;
+        }
     }
 }
 
 SavedContext *switch_save_flush(SavedContext *ctpx, void *p1, void *p2) {
-    if(p2  ==  NULL)
+    if (p2  ==  NULL) {
         return ((ProcessControlBlock*)p1)->ctx;
+    }
 
     struct pte *pt2;
     pt2 = ((ProcessControlBlock*)p2)->pt_r0;
@@ -265,8 +281,9 @@ SavedContext *switch_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
 
     current_process = (ProcessControlBlock*)p2;
-    if((ProcessControlBlock*)p1 != idle_process)
+    if((ProcessControlBlock*)p1 != idle_process) {
         add_ready_queue((ProcessControlBlock*)p1);
+    }
 
     return ((ProcessControlBlock*)p2)->ctx;
 }
@@ -283,14 +300,14 @@ SavedContext *init_save_flush(SavedContext *ctx, void *p1, void *p2) {
 }
 
 SavedContext *delay_save_flush(SavedContext *ctpx, void *p1, void *p2) {
-    if(p2 == NULL){
+    if (p2 == NULL) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_delay_queue((ProcessControlBlock*)p1);
         current_process = idle_process;
         return idle_process->ctx;
     }
-    else{
+    else {
         pte *pt2 = ((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
@@ -306,9 +323,9 @@ SavedContext *fork_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     struct pte *pt2;
     unsigned long i;
     pt2 = ((ProcessControlBlock*)p2)->pt_r0;
-    for(i = 0;i<PAGE_TABLE_LEN;i++) {
+    for (i = 0;i<PAGE_TABLE_LEN;i++) {
         pt2[i].valid = 0;
-        if(current_process->pt_r0[i].valid){
+        if (current_process->pt_r0[i].valid) {
             pt2[i].valid = 1;
             if (i >= PAGE_TABLE_LEN-KERNEL_STACK_PAGES) pt2[i].uprot = PROT_NONE;
             else pt2[i].uprot = PROT_READ | PROT_WRITE;
@@ -318,7 +335,7 @@ SavedContext *fork_save_flush(SavedContext *ctpx, void *p1, void *p2) {
             current_process->pt_r0[addi_pte_vpn].uprot = PROT_NONE;//XXX
             current_process->pt_r0[addi_pte_vpn].kprot = PROT_READ | PROT_WRITE;//XXX
             current_process->pt_r0[addi_pte_vpn].pfn = pt2[i].pfn;//XXX
-            memcpy((void*)(addi_pte_vpn<<PAGESHIFT),(void *)(i<<PAGESHIFT),PAGESIZE);//XXX
+            memcpy((void*)(addi_pte_vpn<<PAGESHIFT), (void *)(i<<PAGESHIFT), PAGESIZE);//XXX
             current_process->pt_r0[addi_pte_vpn].valid = 0;
             WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         }
@@ -339,49 +356,50 @@ SavedContext *exit_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     struct pte *pt1 = ((ProcessControlBlock*)p1)->pt_r0;
 
 
-    for(i = 0;i<PAGE_TABLE_LEN;i++)
+    for (i = 0; i<PAGE_TABLE_LEN; i++) {
         if(pt1[i].valid){
             pt1[i].kprot |= PROT_WRITE;
             remove_used_page(&pt1[i]);
             pt1[i].valid = 0;
         }
+    }
 
-    if(p2 == NULL){
+    if(p2 == NULL) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
     }
-    else{
+    else {
         struct pte *pt2 = ((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
     }
     WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
 
     free(((ProcessControlBlock*)p1)->ctx);
-    while(((ProcessControlBlock*)p1)->statusQ != NULL){
+    while(((ProcessControlBlock*)p1)->statusQ != NULL) {
         temp_status = ((ProcessControlBlock*)p1)->statusQ;
         ((ProcessControlBlock*)p1)->statusQ = ((ProcessControlBlock*)p1)->statusQ->next;
         free(temp_status);
     }
     free((ProcessControlBlock*)p1);
 
-    if(p2 == NULL){
+    if (p2 == NULL) {
         current_process = idle_process;
         return idle_process->ctx;
     }
-    else{
+    else {
         current_process = (ProcessControlBlock*)p2;
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
 
 SavedContext *wait_save_flush(SavedContext *ctpx, void *p1, void *p2) {
-    if(p2 == NULL){
+    if (p2 == NULL) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         add_wait_queue((ProcessControlBlock*)p1);
         current_process = idle_process;
         return idle_process->ctx;
     }
-    else{
+    else {
         struct pte *pt2 = ((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
@@ -393,13 +411,13 @@ SavedContext *wait_save_flush(SavedContext *ctpx, void *p1, void *p2) {
 }
 
 SavedContext *tty_save_flush(SavedContext *ctpx, void *p1, void *p2) {
-    if(p2 == NULL){
+    if (p2 == NULL) {
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
         current_process = idle_process;
         return idle_process->ctx;
     }
-    else{
+    else {
         pte *pt2 = ((ProcessControlBlock*)p2)->pt_r0;
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)pt2));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
