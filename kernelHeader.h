@@ -49,11 +49,11 @@ typedef struct terminal
     int n_buf_char;
     char read_buf[256];
     char *write_buf;
-    pcb *readQ_head;
-    pcb *readQ_end;
+    pcb *read_queue_head;
+    pcb *read_queue_end;
     pcb *writingProc;
-    pcb *writeQ_head;
-    pcb *writeQ_end;
+    pcb *write_queue_head;
+    pcb *write_queue_end;
 }terminal;
 
 /* -------------Global variables declaration------------- */
@@ -66,8 +66,8 @@ extern interruptHandler interruptVector[TRAP_VECTOR_SIZE];
 extern pte *pt_r1;
 extern pte idle_pt_r0[PAGE_TABLE_LEN];
 extern pcb *current_process;
-extern pcb *readyQ_head, *readyQ_end;
-extern pcb *waitQ_head, *waitQ_end;
+extern pcb *ready_queue_head, *ready_queue_end;
+extern pcb *wait_queue_head, *wait_queue_end;
 extern pcb *delay_queue_head;
 extern pcb *idle_process;
 extern terminal yalnix_term[NUM_TERMINALS];
@@ -114,7 +114,7 @@ void remove_used_page(pte *p);
 void delete_child(void);
 void add_status(int status);
 int get_new_page(pte * pt, unsigned long addr);
-void allocate_pt(pcb* p);
+void allocate_page_table(pcb* p);
 unsigned long user_stack_bot(void);
 void add_ready_queue(ProcessControlBlock *p);
 void add_wait_queue(ProcessControlBlock *p);

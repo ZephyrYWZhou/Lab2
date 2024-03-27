@@ -1,23 +1,23 @@
 #include "kernelHeader.h"
 
 void add_ready_queue(ProcessControlBlock *p) {
-    if(readyQ_head == NULL)
-        readyQ_head = p;
+    if(ready_queue_head == NULL)
+        ready_queue_head = p;
     else
-        readyQ_end->next = p;
-    readyQ_end = p;
-    readyQ_end->next = NULL;
+        ready_queue_end->next = p;
+    ready_queue_end = p;
+    ready_queue_end->next = NULL;
 }
 
 void add_wait_queue(ProcessControlBlock *p) {
-    if (waitQ_head == NULL) {
-        waitQ_head = p;
+    if (wait_queue_head == NULL) {
+        wait_queue_head = p;
     }
     else {
-        waitQ_end->next = p;
+        wait_queue_end->next = p;
     }
-    waitQ_end = p;
-    waitQ_end->next = NULL;
+    wait_queue_end = p;
+    wait_queue_end->next = NULL;
 }
 
 void add_delay_queue(ProcessControlBlock *p) {
@@ -26,25 +26,25 @@ void add_delay_queue(ProcessControlBlock *p) {
 }
 
 void add_read_queue(int tty_id, ProcessControlBlock* p) {
-    if (yalnix_term[tty_id].readQ_head == NULL) {
-        yalnix_term[tty_id].readQ_head = p;
+    if (yalnix_term[tty_id].read_queue_head == NULL) {
+        yalnix_term[tty_id].read_queue_head = p;
     }
     else {
-        yalnix_term[tty_id].readQ_end->next = p;
+        yalnix_term[tty_id].read_queue_end->next = p;
     }
-    yalnix_term[tty_id].readQ_end = p;
-    yalnix_term[tty_id].readQ_end->next = NULL;
+    yalnix_term[tty_id].read_queue_end = p;
+    yalnix_term[tty_id].read_queue_end->next = NULL;
 }
 
 void add_write_queue(int tty_id, ProcessControlBlock* p) {
-    if (yalnix_term[tty_id].writeQ_head == NULL) {
-        yalnix_term[tty_id].writeQ_head = p;
+    if (yalnix_term[tty_id].write_queue_head == NULL) {
+        yalnix_term[tty_id].write_queue_head = p;
     }
     else {
-        yalnix_term[tty_id].writeQ_end->next = p;
+        yalnix_term[tty_id].write_queue_end->next = p;
     }
-    yalnix_term[tty_id].writeQ_end = p;
-    yalnix_term[tty_id].writeQ_end->next = NULL;
+    yalnix_term[tty_id].write_queue_end = p;
+    yalnix_term[tty_id].write_queue_end->next = NULL;
 }
 
 unsigned long get_free_page(void) {
@@ -90,7 +90,7 @@ int used_pgn_r0(void) {
     return used_pgn;
 }
 
-void allocate_pt(pcb* p) {
+void allocate_page_table(pcb* p) {
     if (half_full == 0) {
         /* set appropriate virtual start address for r0 page table */
         p->pt_r0 = (pte*)next_PT_vaddr;
@@ -119,14 +119,14 @@ void allocate_pt(pcb* p) {
 
 void delete_child(void) {
     ProcessControlBlock *tmp;
-    tmp = readyQ_head;
+    tmp = ready_queue_head;
     while (tmp != NULL) {
         if (tmp->parent == current_process) {
             tmp->parent = NULL;
         }
         tmp = tmp->next;
     }
-    tmp = waitQ_head;
+    tmp = wait_queue_head;
     while(tmp != NULL) {
         if(tmp->parent == current_process) {
             tmp->parent = NULL;
@@ -135,14 +135,14 @@ void delete_child(void) {
     }
     int i;
     for (i = 0;i<NUM_TERMINALS;i++) {
-        tmp = yalnix_term[i].readQ_head;
+        tmp = yalnix_term[i].read_queue_head;
         while(tmp != NULL) {
             if(tmp->parent == current_process) {
                 tmp->parent = NULL;
             }
             tmp = tmp->next;
         }
-        tmp = yalnix_term[i].writeQ_head;
+        tmp = yalnix_term[i].write_queue_head;
         while (tmp != NULL) {
             if (tmp->parent == current_process) {
                 tmp->parent = NULL;
@@ -192,14 +192,14 @@ unsigned long user_stack_bot(void) {
 
 ProcessControlBlock *next_ready_queue(void) {
     ProcessControlBlock *return_pcb;
-    if (readyQ_head == NULL) {
+    if (ready_queue_head == NULL) {
         return NULL;
     }
 
-    return_pcb = readyQ_head;
-    readyQ_head = readyQ_head->next;
-    if (readyQ_head == NULL) {
-        readyQ_end = NULL;
+    return_pcb = ready_queue_head;
+    ready_queue_head = ready_queue_head->next;
+    if (ready_queue_head == NULL) {
+        ready_queue_end = NULL;
         return_pcb->next = NULL;
     }
     return return_pcb;
@@ -207,42 +207,42 @@ ProcessControlBlock *next_ready_queue(void) {
 
 ProcessControlBlock *next_read_queue(int tty_id) {
     ProcessControlBlock *return_pcb;
-    if (yalnix_term[tty_id].readQ_head == NULL) {
+    if (yalnix_term[tty_id].read_queue_head == NULL) {
         return NULL;
     }
-    return_pcb = yalnix_term[tty_id].readQ_head;
-    yalnix_term[tty_id].readQ_head = yalnix_term[tty_id].readQ_head->next;
+    return_pcb = yalnix_term[tty_id].read_queue_head;
+    yalnix_term[tty_id].read_queue_head = yalnix_term[tty_id].read_queue_head->next;
     return return_pcb;
 }
 
 ProcessControlBlock *next_write_queue(int tty_id) {
     ProcessControlBlock *return_pcb;
-    if (yalnix_term[tty_id].writeQ_head == NULL) {
+    if (yalnix_term[tty_id].write_queue_head == NULL) {
         return NULL;
     }
-    return_pcb = yalnix_term[tty_id].writeQ_head;
-    yalnix_term[tty_id].writeQ_head = yalnix_term[tty_id].writeQ_head->next;
+    return_pcb = yalnix_term[tty_id].write_queue_head;
+    yalnix_term[tty_id].write_queue_head = yalnix_term[tty_id].write_queue_head->next;
     return return_pcb;
 }
 
 ProcessControlBlock *next_wait_queue(void) {
     ProcessControlBlock *tmp;
     ProcessControlBlock *return_pcb;
-    tmp = waitQ_head;
+    tmp = wait_queue_head;
     if(tmp == NULL) {
         return NULL;
     }
     if (tmp->pid == current_process->parent->pid) {
-        waitQ_head = tmp->next;
-        if (waitQ_head == NULL) waitQ_end = NULL;
+        wait_queue_head = tmp->next;
+        if (wait_queue_head == NULL) wait_queue_end = NULL;
         return tmp;
     }
     while (tmp->next != NULL) {
         if (tmp->next->pid == current_process->parent->pid) {
             return_pcb = tmp->next;
             tmp->next = return_pcb->next;
-            if (return_pcb == waitQ_end) {
-                waitQ_end = tmp;
+            if (return_pcb == wait_queue_end) {
+                wait_queue_end = tmp;
             }
             return_pcb->next = NULL;
             return return_pcb;

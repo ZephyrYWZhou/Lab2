@@ -10,7 +10,7 @@ int kernel_Fork(void) {
     // Allocate memory for the child process and its context
     child_process = (ProcessControlBlock*)malloc(sizeof(ProcessControlBlock));
     child_process->ctx = (SavedContext*)malloc(sizeof(SavedContext));
-    allocate_pt(child_process); // Allocate page table for the child process
+    allocate_page_table(child_process); // Allocate page table for the child process
 
     // Check if there is enough physical memory for Region 0
     if (used_pgn_r0() > free_frame_cnt) {
@@ -211,7 +211,7 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
         return_len = len; 
 
         // If there are processes waiting in the read queue, switch to the next process in the queue
-        if (yalnix_term[tty_id].readQ_head != NULL) {
+        if (yalnix_term[tty_id].read_queue_head != NULL) {
             ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_read_queue(tty_id));
         }
     }
@@ -242,7 +242,7 @@ int kernel_Ttywrite(int tty_id, void *buf, int len) {
     yalnix_term[tty_id].writingProc = NULL; 
 
     // If there are processes waiting in the write queue, switch to the next process in the queue
-    if (yalnix_term[tty_id].writeQ_head != NULL) {
+    if (yalnix_term[tty_id].write_queue_head != NULL) {
         ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_write_queue(tty_id));
     }
 

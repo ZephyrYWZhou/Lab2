@@ -21,8 +21,8 @@ struct pte idle_pt_r0[PAGE_TABLE_LEN];   // Idle process page table (r0)
 pcb *current_process;           // Pointer to the current running process
 pcb *delay_queue_head;               // Head of the delay queue
 pcb *idle_process;              // Pointer to the idle process
-pcb *readyQ_head = NULL, *readyQ_end = NULL; // Head and end pointers of the ready queue
-pcb *waitQ_head = NULL, *waitQ_end = NULL;   // Head and end pointers of the wait queue
+pcb *ready_queue_head = NULL, *ready_queue_end = NULL; // Head and end pointers of the ready queue
+pcb *wait_queue_head = NULL, *wait_queue_end = NULL;   // Head and end pointers of the wait queue
 
 void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, char** cmd_args) {
     unsigned int i;
@@ -51,11 +51,11 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     for(i = 0;i < NUM_TERMINALS;i++) {
         yalnix_term[i].n_buf_char = 0;
         yalnix_term[i].write_buf = NULL;
-        yalnix_term[i].writeQ_head = NULL;
-        yalnix_term[i].writeQ_end = NULL;
+        yalnix_term[i].write_queue_head = NULL;
+        yalnix_term[i].write_queue_end = NULL;
         yalnix_term[i].writingProc = NULL;
-        yalnix_term[i].readQ_head = NULL;
-        yalnix_term[i].readQ_end = NULL;
+        yalnix_term[i].read_queue_head = NULL;
+        yalnix_term[i].read_queue_end = NULL;
     }
 
     /* initialize the free phys pages structure */
@@ -129,7 +129,7 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     /* create init process */
     pcb *initProc = (pcb*)malloc(sizeof(pcb));
     initProc->pid = next_pid++;
-    allocate_pt(initProc);
+    allocate_page_table(initProc);
 
     initProc->ctx = (SavedContext*)malloc(sizeof(SavedContext));
     initProc->n_child = 0;
@@ -351,7 +351,7 @@ void trap_tty_receive_handler(ExceptionInfo *info) {
     receive_count = TtyReceive(tty_id, yalnix_term[tty_id].read_buf+yalnix_term[tty_id].n_buf_char, TERMINAL_MAX_LINE);
     yalnix_term[tty_id].n_buf_char += receive_count;
 
-    if (yalnix_term[tty_id].readQ_head!=NULL) {
+    if (yalnix_term[tty_id].read_queue_head!=NULL) {
         ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_read_queue(tty_id));
     }
 }
