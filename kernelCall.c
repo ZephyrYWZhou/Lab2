@@ -13,7 +13,7 @@ int kernel_Fork(void) {
     allocate_page_table(child_process); // Allocate page table for the child process
 
     // Check if there is enough physical memory for Region 0
-    if (used_pgn_r0() > free_frame_cnt) {
+    if (used_pgn_r0() > num_free_frame) {
         // Print error message if there's not enough memory
         TracePrintf(0, "kernel_fork ERROR: not enough phys mem for creating Region 0.\n");
         // Free allocated memory for the child process and its context
@@ -98,7 +98,7 @@ void kernel_Exit(int status) {
 
 int kernel_Wait(int *status_ptr) {
     int return_pid;
-    StatusQueue *temp_status;
+    status_queue *temp_status;
     if (current_process->n_child == 0) {
         return ERROR;
     }
@@ -138,7 +138,7 @@ int kernel_Brk(void *addr) {
     // Check if the new address is greater than or equal to the current brk
     if (pn_addr >= pn_brk) {
         // If the difference between the new address and current brk exceeds the free frame count, return error
-        if (pn_addr - pn_brk > free_frame_cnt) {
+        if (pn_addr - pn_brk > num_free_frame) {
             return ERROR;
         }
         // Iterate from current brk to the new address to update page table entries

@@ -53,7 +53,7 @@ unsigned long get_free_page(void) {
     } 
     phys_frame *tmp = free_frames_head->next;
     free_frames_head->next = tmp->next;
-    free_frame_cnt--;
+    num_free_frame--;
     unsigned long ret = tmp->phys_frame_num;
     free(tmp);
     return ret;
@@ -72,7 +72,7 @@ int get_new_page(pte * pt, unsigned long addr) {
     } 
     phys_frame *tmp = free_frames_head->next;
     free_frames_head->next = tmp->next;
-    free_frame_cnt--;
+    num_free_frame--;
     unsigned long ret = tmp->phys_frame_num;
     free(tmp);
     pt->pfn = ret;
@@ -160,10 +160,10 @@ void delete_child(void) {
 }
 
 void add_status(int status) {
-    StatusQueue *tmp;
+    status_queue *tmp;
     tmp = current_process->parent->statusQ;
     if (tmp == NULL) {
-        tmp = (StatusQueue*)malloc(sizeof(StatusQueue));
+        tmp = (status_queue*)malloc(sizeof(status_queue));
         current_process->parent->statusQ = tmp;
         tmp->pid = current_process->pid;
         tmp->status = status;
@@ -173,7 +173,7 @@ void add_status(int status) {
         while(tmp->next != NULL) {
             tmp = tmp->next;
         }
-        tmp->next = (StatusQueue*)malloc(sizeof(StatusQueue));
+        tmp->next = (status_queue*)malloc(sizeof(status_queue));
         tmp = tmp->next;
         tmp->pid = current_process->pid;
         tmp->status = status;
@@ -352,7 +352,7 @@ SavedContext *fork_save_flush(SavedContext *ctpx, void *p1, void *p2) {
 
 SavedContext *exit_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     unsigned long i;
-    StatusQueue *temp_status;
+    status_queue *temp_status;
     struct pte *pt1 = ((ProcessControlBlock*)p1)->pt_r0;
 
 

@@ -21,7 +21,7 @@ typedef struct status_fifo_q
     int pid;
     int status;
     struct status_fifo_q *next;
-}StatusQueue;
+}status_queue;
 
 /*PCB data structure */
 typedef struct pcb {
@@ -31,7 +31,7 @@ typedef struct pcb {
     int n_child;
     int delay_clock;
     unsigned long brk;
-    StatusQueue *statusQ;
+    status_queue *statusQ;
     struct pcb *parent;
     struct pcb *next;
 }pcb;
@@ -60,7 +60,7 @@ typedef struct terminal
 extern phys_frame *free_frames_head; /* head of free phys frames */
 extern unsigned long next_PT_vaddr; /* data structure for marking allocated page table */
 extern int half_full;
-extern int free_frame_cnt;
+extern int num_free_frame;
 typedef void (*interruptHandler)(ExceptionInfo *info);
 extern interruptHandler interruptVector[TRAP_VECTOR_SIZE];
 extern pte *pt_r1;
@@ -109,22 +109,26 @@ SavedContext *tty_save_flush(SavedContext *ctpx, void *p1, void *p2);
 /* -------------Helper function declaration------------- */
 int LoadProgram(char *name, char **args, ExceptionInfo *info);
 int used_pgn_r0(void);
+int get_new_page(pte * pt, unsigned long addr);
+
 unsigned long get_free_page(void);
+unsigned long user_stack_bot(void);
+
 void remove_used_page(pte *p);
 void delete_child(void);
 void add_status(int status);
-int get_new_page(pte * pt, unsigned long addr);
 void allocate_page_table(pcb* p);
-unsigned long user_stack_bot(void);
+void update_delay_queue(void);
 void add_ready_queue(ProcessControlBlock *p);
 void add_wait_queue(ProcessControlBlock *p);
 void add_read_queue(int tty_id, ProcessControlBlock* p);
 void add_write_queue(int tty_id, ProcessControlBlock* p);
+
 ProcessControlBlock *next_ready_queue(void);
 ProcessControlBlock *next_read_queue(int tty_id);
 ProcessControlBlock *next_write_queue(int tty_id);
 ProcessControlBlock *next_wait_queue(void);
-void update_delay_queue(void);
+
 RCS421RegVal vaddr2paddr(unsigned long vaddr);
 
 #endif

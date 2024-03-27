@@ -2,7 +2,7 @@
 
 /*variables definitions*/
 phys_frame *free_frames_head;   // Pointer to the head of the list of free physical frames
-int free_frame_cnt = 0;         // Count of free frames
+int num_free_frame = 0;         // Count of free frames
 
 unsigned int next_pid = 0;      // Next process ID to be assigned
 void *kernel_brk;               // Current kernel break pointer
@@ -64,8 +64,8 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     for (i= PMEM_BASE; i < PMEM_BASE+pmem_size; i += PAGESIZE){
         tmp->next = (phys_frame*)malloc(sizeof(phys_frame));
         tmp = tmp->next;
-        tmp->phys_frame_num = free_frame_cnt;
-        free_frame_cnt++;
+        tmp->phys_frame_num = num_free_frame;
+        num_free_frame++;
     }
     tmp = free_frames_head;
     phys_frame* t;
@@ -73,7 +73,7 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
         if (tmp->next->phys_frame_num >= (KERNEL_STACK_BASE>>PAGESHIFT) && tmp->next->phys_frame_num<((unsigned long)kernel_brk>>PAGESHIFT)) {
             t = tmp->next;
             tmp->next = tmp->next->next;
-            free_frame_cnt--;
+            num_free_frame--;
             free(t);
         }
         else tmp = tmp->next;
@@ -176,7 +176,7 @@ int SetKernelBrk(void *addr) {
     else {
         unsigned long a, idx;
         // Calculate the difference between the new address and the current kernel break
-        if ((unsigned long)addr - UP_TO_PAGE(kernel_brk) > PAGESIZE * free_frame_cnt) {
+        if ((unsigned long)addr - UP_TO_PAGE(kernel_brk) > PAGESIZE * num_free_frame) {
             // If the difference exceeds available free frames, return -1
             return -1;
         }
@@ -208,7 +208,7 @@ void trap_memory_handler(ExceptionInfo *info) {
     unsigned long brk_vpn = UP_TO_PAGE(current_process->brk)>>PAGESHIFT;
     unsigned long down_addr_vpn = DOWN_TO_PAGE(addr)>>PAGESHIFT;
 
-    if (addr_vpn <= usbot_vpn && addr_vpn > brk_vpn && (usbot_vpn-down_addr_vpn) < free_frame_cnt) {
+    if (addr_vpn <= usbot_vpn && addr_vpn > brk_vpn && (usbot_vpn-down_addr_vpn) < num_free_frame) {
         for (i = addr>>PAGESHIFT;i <= userstackbottom>>PAGESHIFT;i++) {
             if ((current_process->pt_r0)[i].valid) {
                 Halt();

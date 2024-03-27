@@ -25,7 +25,7 @@
 #	For example, the Makefile will make test1 out of test1.c,
 #	if you have a file named test1.c in this directory.
 #
-ALL = yalnix init idle console shell delaytest
+ALL = yalnix init idle console shell test
 
 #
 #	You must modify the KERNEL_OBJS and KERNEL_SRCS definitions
@@ -33,8 +33,8 @@ ALL = yalnix init idle console shell delaytest
 #	make up your kernel, and KERNEL_SRCS should  be a list of
 #	the corresponding source files that make up your kernel.
 #
-KERNEL_OBJS = yalnix.o load.o helper.o kernelCall.o
-KERNEL_SRCS = yalnix.c load.c helper.c kernelCall.c
+KERNEL_OBJS = yalnix.o loadProgram.o helper.o kernelCall.o
+KERNEL_SRCS = yalnix.c loadProgram.c helper.c kernelCall.c
 
 #
 #	You should not have to modify anything else in this Makefile
