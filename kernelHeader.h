@@ -98,13 +98,13 @@ void trap_tty_transmit_handler(ExceptionInfo *info);
 
 
 /* -------------Context switch functions declaration------------- */
-SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *init_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2);
-SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *switch_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *init_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *delay_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *fork_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *exit_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *wait_save_flush(SavedContext *ctpx, void *p1, void *p2);
+SavedContext *tty_save_flush(SavedContext *ctpx, void *p1, void *p2);
 
 /* -------------Helper function declaration------------- */
 int LoadProgram(char *name, char **args, ExceptionInfo *info);

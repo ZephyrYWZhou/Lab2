@@ -148,7 +148,7 @@ void KernelStart(ExceptionInfo *info, unsigned int pmem_size, void *orig_brk, ch
     }
 
     /* Perform a context switch to the init process */
-    ContextSwitch(init_sf,current_process->ctx,current_process,initProc);//XXX
+    ContextSwitch(init_save_flush,current_process->ctx,current_process,initProc);//XXX
 
     /* Load programs based on the current process */
     if (current_process->pid == 0)
@@ -352,16 +352,16 @@ void trap_tty_receive_handler(ExceptionInfo *info) {
     yalnix_term[tty_id].n_buf_char += receive_count;
 
     if (yalnix_term[tty_id].readQ_head!=NULL) {
-        ContextSwitch(switch_sf, current_process->ctx, current_process, next_read_queue(tty_id));
+        ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_read_queue(tty_id));
     }
 }
 
 void trap_tty_transmit_handler(ExceptionInfo *info) {
     int tty_id = (info->code);
-    ContextSwitch(switch_sf, current_process->ctx, current_process, yalnix_term[tty_id].writingProc);
+    ContextSwitch(switch_save_flush, current_process->ctx, current_process, yalnix_term[tty_id].writingProc);
 }
 
 void trap_clock_handler(ExceptionInfo *info) {
     update_delay_queue();
-    ContextSwitch(switch_sf, current_process->ctx, current_process, next_ready_queue());
+    ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_ready_queue());
 }

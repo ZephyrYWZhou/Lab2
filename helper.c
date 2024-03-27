@@ -254,7 +254,7 @@ void update_delay_queue(void) {
     }
 }
 
-SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *switch_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     if(p2  ==  NULL)
         return ((ProcessControlBlock*)p1)->ctx;
 
@@ -271,7 +271,7 @@ SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
     return ((ProcessControlBlock*)p2)->ctx;
 }
 
-SavedContext *init_sf(SavedContext *ctx, void *p1, void *p2) {
+SavedContext *init_save_flush(SavedContext *ctx, void *p1, void *p2) {
     memcpy(kernel_stack_buff, (void*)KERNEL_STACK_BASE, PAGESIZE*KERNEL_STACK_PAGES);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
     WriteRegister(REG_PTR0, vaddr2paddr((unsigned long)((pcb*)p2)->pt_r0));
@@ -282,7 +282,7 @@ SavedContext *init_sf(SavedContext *ctx, void *p1, void *p2) {
     return ((pcb*)p2)->ctx;
 }
 
-SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *delay_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
@@ -300,7 +300,7 @@ SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2) {
     }
 }
 
-SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *fork_save_flush(SavedContext *ctpx, void *p1, void *p2) {
 
     unsigned long addi_pte_vpn = USER_STACK_LIMIT>>PAGESHIFT;
     struct pte *pt2;
@@ -333,7 +333,7 @@ SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
     return ((ProcessControlBlock*)p2)->ctx;
 }
 
-SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *exit_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     unsigned long i;
     StatusQueue *temp_status;
     struct pte *pt1 = ((ProcessControlBlock*)p1)->pt_r0;
@@ -373,7 +373,7 @@ SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
     }
 }
 
-SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *wait_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);
@@ -392,7 +392,7 @@ SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2) {
     }
 }
 
-SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2) {
+SavedContext *tty_save_flush(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
         WriteRegister(REG_TLB_FLUSH,TLB_FLUSH_0);

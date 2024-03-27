@@ -37,7 +37,7 @@ int kernel_Fork(void) {
     temp = current_process; // Save the current process pointer in temp
 
     // Perform a context switch to switch to the child process
-    ContextSwitch(fork_sf, temp->ctx, temp, child_process);
+    ContextSwitch(fork_save_flush, temp->ctx, temp, child_process);
 
     // Check if the current process is the parent or the child
     if (current_process->pid == temp->pid) {
@@ -70,30 +70,29 @@ int kernel_Exec(char *filename, char **argvec, ExceptionInfo *info) {
 void kernel_Exit(int status) {
     ProcessControlBlock *temp_process;
 
+    // Check the pid of the current process
     if (current_process->pid==0||current_process->pid==1) {
         Halt();
     }
 
-    /*make al the children orphans */
     delete_child();
 
     if (current_process->parent == NULL) {
-        ContextSwitch(exit_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(exit_save_flush, current_process->ctx, current_process, next_ready_queue());
         return;
     }
 
-    /* add status to the Q of parent */
     add_status(status);
 
     temp_process = next_wait_queue();
 
     if (temp_process == NULL) {
         fflush(stdout);
-        ContextSwitch(exit_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(exit_save_flush, current_process->ctx, current_process, next_ready_queue());
     }
     else {
         fflush(stdout);
-        ContextSwitch(exit_sf, current_process->ctx, current_process, temp_process);
+        ContextSwitch(exit_save_flush, current_process->ctx, current_process, temp_process);
     }
 }
 
@@ -105,7 +104,7 @@ int kernel_Wait(int *status_ptr) {
     }
 
     if (current_process->statusQ == NULL) {
-        ContextSwitch(wait_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(wait_save_flush, current_process->ctx, current_process, next_ready_queue());
     }
 
     return_pid = current_process->statusQ->pid;
@@ -176,7 +175,7 @@ int kernel_Delay(int clock_ticks) {
     }
     current_process->delay_clock = clock_ticks;
     if (clock_ticks>0) {
-        ContextSwitch(delay_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(delay_save_flush, current_process->ctx, current_process, next_ready_queue());
     }
 
     return 0;
@@ -194,7 +193,7 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
     if (yalnix_term[tty_id].n_buf_char == 0) {
         // If buffer is empty, add the process to the read queue and switch to the next ready process
         add_read_queue(tty_id, current_process);
-        ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(tty_save_flush, current_process->ctx, current_process, next_ready_queue());
     }
 
     // Check if the number of characters in the buffer is less than or equal to the requested length
@@ -213,7 +212,7 @@ int kernel_Ttyread(int tty_id, void *buf, int len) {
 
         // If there are processes waiting in the read queue, switch to the next process in the queue
         if (yalnix_term[tty_id].readQ_head != NULL) {
-            ContextSwitch(switch_sf, current_process->ctx, current_process, next_read_queue(tty_id));
+            ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_read_queue(tty_id));
         }
     }
     return return_len; // Return the number of characters read
@@ -230,7 +229,7 @@ int kernel_Ttywrite(int tty_id, void *buf, int len) {
     if (yalnix_term[tty_id].writingProc != NULL) {
         // If another process is writing, add the current process to the write queue and switch to the next ready process
         add_write_queue(tty_id, current_process);
-        ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
+        ContextSwitch(tty_save_flush, current_process->ctx, current_process, next_ready_queue());
     }
 
     // Store the buffer and transmit its contents to the terminal
@@ -239,12 +238,12 @@ int kernel_Ttywrite(int tty_id, void *buf, int len) {
 
     // Mark the current process as the writing process
     yalnix_term[tty_id].writingProc = current_process;
-    ContextSwitch(tty_sf, current_process->ctx, current_process, next_ready_queue());
+    ContextSwitch(tty_save_flush, current_process->ctx, current_process, next_ready_queue());
     yalnix_term[tty_id].writingProc = NULL; 
 
     // If there are processes waiting in the write queue, switch to the next process in the queue
     if (yalnix_term[tty_id].writeQ_head != NULL) {
-        ContextSwitch(switch_sf, current_process->ctx, current_process, next_write_queue(tty_id));
+        ContextSwitch(switch_save_flush, current_process->ctx, current_process, next_write_queue(tty_id));
     }
 
     return len; 
