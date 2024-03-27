@@ -1,146 +1,5 @@
 #include "kernelHeader.h"
 
-/*return the used pages in r0*/
-
-int used_pgn_r0(void) {
-    int used_pgn = 0;
-    int i;
-    for (i = 0; i < PAGE_TABLE_LEN; i++) {
-        if (current_process->pt_r0[i].valid) {
-            used_pgn++;
-        }
-    }
-    return used_pgn;
-}
-
-unsigned long get_free_page(void) {
-    if (free_frames_head->next == NULL) {
-        return 0;
-    } 
-    phys_frame *tmp = free_frames_head->next;
-    free_frames_head->next = tmp->next;
-    free_frame_cnt--;
-    unsigned long ret = tmp->phys_frame_num;
-    free(tmp);
-    return ret;
-}
-
-void remove_used_page(pte *p) {
-    phys_frame *tmp = (phys_frame*)malloc(sizeof(phys_frame));
-    tmp->phys_frame_num = p->pfn;
-    tmp->next = free_frames_head->next;
-    free_frames_head->next = tmp;
-}
-
-/*update the child information*/
-
-void delete_child(void) {
-    ProcessControlBlock *tmp;
-    tmp = readyQ_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
-            tmp->parent = NULL;
-        tmp = tmp->next;
-    }
-    tmp = waitQ_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
-            tmp->parent = NULL;
-        tmp = tmp->next;
-    }
-    int i;
-    for(i = 0;i<NUM_TERMINALS;i++){
-        tmp = yalnix_term[i].readQ_head;
-        while(tmp != NULL){
-            if(tmp->parent == current_process)
-                tmp->parent = NULL;
-            tmp = tmp->next;
-        }
-        tmp = yalnix_term[i].writeQ_head;
-        while(tmp != NULL){
-            if(tmp->parent == current_process)
-                tmp->parent = NULL;
-            tmp = tmp->next;
-        }
-    }
-    tmp = delay_queue_head;
-    while(tmp != NULL){
-        if(tmp->parent == current_process)
-            tmp->parent = NULL;
-        tmp = tmp->next;
-    }
-}
-
-/*add the status to current_process status queue*/
-
-void add_status(int status) {
-    StatusQueue *tmp;
-    tmp = current_process->parent->statusQ;
-    if(tmp == NULL){
-        tmp = (StatusQueue*)malloc(sizeof(StatusQueue));
-        current_process->parent->statusQ = tmp;
-        tmp->pid = current_process->pid;
-        tmp->status = status;
-        tmp->next = NULL;
-    }
-    else{
-        while(tmp->next != NULL)
-            tmp = tmp->next;
-        tmp->next = (StatusQueue*)malloc(sizeof(StatusQueue));
-        tmp = tmp->next;
-        tmp->pid = current_process->pid;
-        tmp->status = status;
-        tmp->next = NULL;
-    }
-}
-
-int get_new_page(pte * pt, unsigned long addr) {
-    if (free_frames_head->next == NULL) return 1;
-    phys_frame *tmp = free_frames_head->next;
-    free_frames_head->next = tmp->next;
-    free_frame_cnt--;
-    unsigned long ret = tmp->phys_frame_num;
-    free(tmp);
-    pt->pfn = ret;
-    return 0;
-}
-
-void allocate_pt(pcb* p) {
-    if (half_full == 0) {
-        /* set appropriate virtual start address for r0 page table */
-        p->pt_r0 = (pte*)next_PT_vaddr;
-        next_PT_vaddr += PAGESIZE/2;
-        half_full = 1;
-        /* get physical frame for r0 page table
-         * set the r1 page table entry for the start address of r0 page table */
-        unsigned long idx = ((unsigned long)(p->pt_r0)-VMEM_1_BASE)>>PAGESHIFT;
-        if(pt_r1[idx].valid) {
-            kernel_Exit(ERROR);
-        }
-        pt_r1[idx].pfn = get_free_page();
-        pt_r1[idx].valid = 1;
-        pt_r1[idx].kprot = PROT_READ|PROT_WRITE;
-        pt_r1[idx].uprot = PROT_NONE;
-    }
-    else {
-        /* set appropriate virtual start address for r0 page table */
-        p->pt_r0 = (struct pte*)next_PT_vaddr;
-        next_PT_vaddr -= PAGESIZE*3/2;
-
-
-        /* whole frame is used, so clear half_full_vaddr and half_full_frame */
-        half_full = 0;
-    }
-}
-
-unsigned long user_stack_bot(void) {
-    unsigned long i;
-    i = (USER_STACK_LIMIT>>PAGESHIFT)-1;
-    while(current_process->pt_r0[i].valid)
-        i--;
-    return i<<PAGESHIFT;
-}
-
 void add_ready_queue(ProcessControlBlock *p) {
     if(readyQ_head == NULL)
         readyQ_head = p;
@@ -182,6 +41,141 @@ void add_write_queue(int tty_id, ProcessControlBlock* p) {
     }
     yalnix_term[tty_id].writeQ_end = p;
     yalnix_term[tty_id].writeQ_end->next = NULL;
+}
+
+unsigned long get_free_page(void) {
+    if (free_frames_head->next == NULL) {
+        return 0;
+    } 
+    phys_frame *tmp = free_frames_head->next;
+    free_frames_head->next = tmp->next;
+    free_frame_cnt--;
+    unsigned long ret = tmp->phys_frame_num;
+    free(tmp);
+    return ret;
+}
+
+void remove_used_page(pte *p) {
+    phys_frame *tmp = (phys_frame*)malloc(sizeof(phys_frame));
+    tmp->phys_frame_num = p->pfn;
+    tmp->next = free_frames_head->next;
+    free_frames_head->next = tmp;
+}
+
+int get_new_page(pte * pt, unsigned long addr) {
+    if (free_frames_head->next == NULL) return 1;
+    phys_frame *tmp = free_frames_head->next;
+    free_frames_head->next = tmp->next;
+    free_frame_cnt--;
+    unsigned long ret = tmp->phys_frame_num;
+    free(tmp);
+    pt->pfn = ret;
+    return 0;
+}
+
+int used_pgn_r0(void) {
+    int used_pgn = 0;
+    int i;
+    for (i = 0; i < PAGE_TABLE_LEN; i++) {
+        if (current_process->pt_r0[i].valid) {
+            used_pgn++;
+        }
+    }
+    return used_pgn;
+}
+
+void allocate_pt(pcb* p) {
+    if (half_full == 0) {
+        /* set appropriate virtual start address for r0 page table */
+        p->pt_r0 = (pte*)next_PT_vaddr;
+        next_PT_vaddr += PAGESIZE/2;
+        half_full = 1;
+        /* get physical frame for r0 page table
+         * set the r1 page table entry for the start address of r0 page table */
+        unsigned long idx = ((unsigned long)(p->pt_r0)-VMEM_1_BASE)>>PAGESHIFT;
+        if(pt_r1[idx].valid) {
+            kernel_Exit(ERROR);
+        }
+        pt_r1[idx].pfn = get_free_page();
+        pt_r1[idx].valid = 1;
+        pt_r1[idx].kprot = PROT_READ|PROT_WRITE;
+        pt_r1[idx].uprot = PROT_NONE;
+    }
+    else {
+        /* set appropriate virtual start address for r0 page table */
+        p->pt_r0 = (struct pte*)next_PT_vaddr;
+        next_PT_vaddr -= PAGESIZE*3/2;
+
+
+        /* whole frame is used, so clear half_full_vaddr and half_full_frame */
+        half_full = 0;
+    }
+}
+
+void delete_child(void) {
+    ProcessControlBlock *tmp;
+    tmp = readyQ_head;
+    while(tmp != NULL){
+        if(tmp->parent == current_process)
+            tmp->parent = NULL;
+        tmp = tmp->next;
+    }
+    tmp = waitQ_head;
+    while(tmp != NULL){
+        if(tmp->parent == current_process)
+            tmp->parent = NULL;
+        tmp = tmp->next;
+    }
+    int i;
+    for(i = 0;i<NUM_TERMINALS;i++){
+        tmp = yalnix_term[i].readQ_head;
+        while(tmp != NULL){
+            if(tmp->parent == current_process)
+                tmp->parent = NULL;
+            tmp = tmp->next;
+        }
+        tmp = yalnix_term[i].writeQ_head;
+        while(tmp != NULL){
+            if(tmp->parent == current_process)
+                tmp->parent = NULL;
+            tmp = tmp->next;
+        }
+    }
+    tmp = delay_queue_head;
+    while(tmp != NULL){
+        if(tmp->parent == current_process)
+            tmp->parent = NULL;
+        tmp = tmp->next;
+    }
+}
+
+void add_status(int status) {
+    StatusQueue *tmp;
+    tmp = current_process->parent->statusQ;
+    if(tmp == NULL){
+        tmp = (StatusQueue*)malloc(sizeof(StatusQueue));
+        current_process->parent->statusQ = tmp;
+        tmp->pid = current_process->pid;
+        tmp->status = status;
+        tmp->next = NULL;
+    }
+    else{
+        while(tmp->next != NULL)
+            tmp = tmp->next;
+        tmp->next = (StatusQueue*)malloc(sizeof(StatusQueue));
+        tmp = tmp->next;
+        tmp->pid = current_process->pid;
+        tmp->status = status;
+        tmp->next = NULL;
+    }
+}
+
+unsigned long user_stack_bot(void) {
+    unsigned long i;
+    i = (USER_STACK_LIMIT>>PAGESHIFT)-1;
+    while(current_process->pt_r0[i].valid)
+        i--;
+    return i<<PAGESHIFT;
 }
 
 ProcessControlBlock *next_ready_queue(void) {
@@ -244,8 +238,6 @@ ProcessControlBlock *next_wait_queue(void) {
     return NULL;
 }
 
-/*update delay queue by clock*/
-
 void update_delay_queue(void) {
     pcb *tmp;
     pcb *delay_pcb;
@@ -261,8 +253,6 @@ void update_delay_queue(void) {
             tmp = tmp->next;
     }
 }
-
-/*switch function for conmen*/
 
 SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
     if(p2  ==  NULL)
@@ -281,20 +271,16 @@ SavedContext *switch_sf(SavedContext *ctpx, void *p1, void *p2) {
     return ((ProcessControlBlock*)p2)->ctx;
 }
 
-/*switch function for init*/
-
 SavedContext *init_sf(SavedContext *ctx, void *p1, void *p2) {
-    memcpy(kernel_stack_buff,(void*)KERNEL_STACK_BASE,PAGESIZE*KERNEL_STACK_PAGES);
+    memcpy(kernel_stack_buff, (void*)KERNEL_STACK_BASE, PAGESIZE*KERNEL_STACK_PAGES);
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)((pcb*)p2)->pt_r0));
+    WriteRegister(REG_PTR0, vaddr2paddr((unsigned long)((pcb*)p2)->pt_r0));
     WriteRegister(REG_TLB_FLUSH, TLB_FLUSH_0);
-    memcpy((void*)KERNEL_STACK_BASE,kernel_stack_buff,PAGESIZE*KERNEL_STACK_PAGES);
-    memcpy(((pcb*)p2)->ctx,((pcb*)p1)->ctx,sizeof(SavedContext));
+    memcpy((void*)KERNEL_STACK_BASE, kernel_stack_buff, PAGESIZE*KERNEL_STACK_PAGES);
+    memcpy(((pcb*)p2)->ctx, ((pcb*)p1)->ctx, sizeof(SavedContext));
     current_process = p2;
     return ((pcb*)p2)->ctx;
 }
-
-/*switch function for delay*/
 
 SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
@@ -313,8 +299,6 @@ SavedContext *delay_sf(SavedContext *ctpx, void *p1, void *p2) {
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
-
-/*switch function for fork*/
 
 SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
 
@@ -348,8 +332,6 @@ SavedContext *fork_sf(SavedContext *ctpx, void *p1, void *p2) {
 
     return ((ProcessControlBlock*)p2)->ctx;
 }
-
-/*switch function for exit*/
 
 SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
     unsigned long i;
@@ -391,8 +373,6 @@ SavedContext *exit_sf(SavedContext *ctpx, void *p1, void *p2) {
     }
 }
 
-/*switch function for wait*/
-
 SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
@@ -412,8 +392,6 @@ SavedContext *wait_sf(SavedContext *ctpx, void *p1, void *p2) {
     }
 }
 
-/*switch function for tty*/
-
 SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2) {
     if(p2 == NULL){
         WriteRegister(REG_PTR0,vaddr2paddr((unsigned long)idle_pt_r0));
@@ -429,8 +407,6 @@ SavedContext *tty_sf(SavedContext *ctpx, void *p1, void *p2) {
         return ((ProcessControlBlock*)p2)->ctx;
     }
 }
-
-/* change vaddr to phys addr*/
 
 RCS421RegVal vaddr2paddr(unsigned long vaddr) {
     unsigned long idx = (vaddr-VMEM_1_BASE)>>PAGESHIFT;
